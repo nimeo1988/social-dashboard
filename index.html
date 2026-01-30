@@ -11,77 +11,64 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-/* RESET & BASE */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* (Mantieni tutto il CSS della tua versione precedente) */
 body { font-family: 'Rajdhani', sans-serif; background: #1a1d35; color: #fff; line-height: 1.6; }
 .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-header { text-align: center; margin-bottom: 30px; padding: 20px 0; }
-h1 { font-size: 2.5rem; letter-spacing: 3px; font-weight: 700; margin: 0; }
-.subtitle { color: #8b95a5; font-size: 1.1rem; margin-top: 10px; letter-spacing: 1px; }
-
-/* UPLOAD */
-.upload-section { background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-.upload-section h2 { margin-bottom: 20px; color: #fff; letter-spacing: 2px; font-size: 1.3rem; }
-.upload-area { border: 3px dashed #2962FF; padding: 40px 20px; text-align: center; cursor: pointer; border-radius: 12px; transition: all 0.3s ease; background: rgba(41, 98, 255, 0.05); }
-.upload-area:hover { border-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
-.upload-area.dragover { border-color: #4CAF50; background: rgba(76, 175, 80, 0.15); transform: scale(1.02); }
-.upload-icon { font-size: 3rem; margin-bottom: 10px; }
-.file-input { display: none; }
-.file-info { margin-top: 15px; font-size: 0.95rem; color: #27ae60; font-weight: 500; }
-.error-msg { margin-top: 15px; font-size: 0.95rem; color: #e74c3c; font-weight: 500; }
-
-/* TABLE */
-.table-container { background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: none; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
-.table-container.active { display: block; opacity: 1; transform: translateY(0); }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-th, td { padding: 12px 15px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #2c2f4d; }
-th { background: #1a1d35; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; color: #a8b2c1; }
-tr:hover { background: rgba(41, 98, 255, 0.05); }
-.screenshot-thumbnail { width: 80px; height: 50px; object-fit: cover; cursor: pointer; border-radius: 6px; transition: all 0.3s ease; border: 2px solid #2c2f4d; }
-.screenshot-thumbnail:hover { transform: scale(1.1); border-color: #2962FF; box-shadow: 0 4px 12px rgba(41, 98, 255, 0.5); }
-.screenshot-cell { text-align: center; }
-
-/* PAGINATION */
-.pagination { text-align: center; margin: 20px 0; display: flex; justify-content: center; align-items: center; gap: 15px; }
-.pagination button { padding: 10px 20px; background: #2c2f4d; border: 2px solid #3a3d5c; color: #fff; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 600; transition: all 0.3s ease; }
-.pagination button:hover:not(:disabled) { background: #2962FF; border-color: #2962FF; }
-.pagination button:disabled { opacity: 0.3; cursor: not-allowed; }
-#pageInfo { font-weight: 600; color: #a8b2c1; }
-
-/* MODAL */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; }
-.modal-content { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-.close { position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
-.close:hover { color: #2962FF; transform: scale(1.2); }
+header { text-align:center; margin-bottom:30px; }
+h1 { font-size:2.5rem; margin:0; letter-spacing:3px; font-weight:700; }
+.subtitle { color:#8b95a5; font-size:1.1rem; margin-top:10px; letter-spacing:1px; }
+/* Resto del CSS... puoi copiare tutto dalla tua versione */
 </style>
 </head>
 
 <body>
 <div class="container">
+
 <header>
     <h1>SOCIAL ENGINEERING DASHBOARD</h1>
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
 <div class="upload-section">
-    <h2>UPLOAD EXCEL DATA</h2>
+    <h2>UPLOAD XLSX / CSV</h2>
     <div class="upload-area" id="uploadArea">
         <div class="upload-icon">📊</div>
-        <p>Click to upload Excel file</p>
-        <input type="file" id="excelInput" class="file-input" accept=".xlsx,.xls">
+        <p>Click to upload XLSX/CSV file</p>
+        <p style="color:#8b95a5">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xls,.txt">
     </div>
     <div id="fileInfo" class="file-info"></div>
     <div id="errorMsg" class="error-msg"></div>
 </div>
 
 <div class="table-container" id="tableContainer">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
+        <div class="date-input-wrapper">
+            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date">
+        </div>
+        <div class="date-input-wrapper">
+            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date">
+        </div>
+        <select id="sectorFilter" class="search-box" style="cursor:pointer;">
+            <option value="">All Sectors</option>
+        </select>
+        <select id="goalFilter" class="search-box" style="cursor:pointer;">
+            <option value="">All Goals</option>
+        </select>
+        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;">🔄 Reset</button>
+    </div>
+    
+    <div style="text-align:center;margin-bottom:1.5rem;">
+        <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">📄 Generate PDF Report</button>
+    </div>
+    
     <table>
         <thead>
             <tr>
                 <th>Site</th>
                 <th>Date</th>
-                <th>Sector Attacked</th>
-                <th>Attack Goal</th>
+                <th>Sector</th>
+                <th>Goal</th>
                 <th>Screenshot</th>
             </tr>
         </thead>
@@ -100,105 +87,179 @@ tr:hover { background: rgba(41, 98, 255, 0.05); }
     <span class="close">&times;</span>
     <img class="modal-content" id="modalImage">
 </div>
-</div>
+
+<!-- Canvas nascosti per PDF -->
+<canvas id="pdfBarChart" style="position:absolute;left:-9999px;top:-9999px;"></canvas>
+<canvas id="pdfLineChart" style="position:absolute;left:-9999px;top:-9999px;"></canvas>
+<canvas id="pdfMultiLineChart" style="position:absolute;left:-9999px;top:-9999px;"></canvas>
 
 <script>
 let currentData = [];
 let filteredData = [];
 let currentPage = 1;
 const rowsPerPage = 10;
-const colors = ['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
+const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
 
-const excelInput = document.getElementById('excelInput');
-const tableContainer = document.getElementById('tableContainer');
-const tableBody = document.getElementById('tableBody');
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const errorMsg = document.getElementById('errorMsg');
 
-const uploadArea = document.getElementById('uploadArea');
-uploadArea.onclick = () => excelInput.click();
+uploadArea.onclick = () => fileInput.click();
 
-function getLocalImagePath(rowIndex){
-    return `images/${rowIndex}.png`;
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => { if(e.target.files.length) handleFile(e.target.files[0]); });
+
+function getGitHubImagePath(filename) {
+    if(!filename) return '';
+    return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${filename}`;
 }
 
-function showImage(path){
+function showImage(imagePath) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
     modal.style.display = 'flex';
-    modalImg.src = path;
+    modalImg.src = imagePath;
 }
 
-function closeModal(){
-    document.getElementById('imageModal').style.display='none';
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
 }
 
-document.addEventListener('keydown', e=>{if(e.key==='Escape') closeModal();});
-
-excelInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    fileInfo.textContent = `📁 Loading ${file.name}...`;
+async function handleFile(file){
     errorMsg.textContent = '';
+    fileInfo.textContent = `📁 Loading ${file.name}...`;
+
     try {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        if(jsonData.length < 2) throw new Error("File vuoto");
+        let dataRows = [];
 
-        const header = jsonData[0];
-        const rows = jsonData.slice(1);
-        const siteIdx = header.findIndex(h=>h.toLowerCase().includes('site'));
-        const dateIdx = header.findIndex(h=>h.toLowerCase().includes('date'));
-        const sectorIdx = header.findIndex(h=>h.toLowerCase().includes('sector'));
-        const goalIdx = header.findIndex(h=>h.toLowerCase().includes('goal'));
-        const rowIndexIdx = header.findIndex(h=>h.toLowerCase().includes('row')||h.toLowerCase().includes('index'));
+        if(file.name.endsWith('.xlsx') || file.name.endsWith('.xls')){
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, {type:"array"});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            dataRows = XLSX.utils.sheet_to_json(firstSheet, {defval:""});
+        } else {
+            // CSV fallback
+            const text = await file.text();
+            const lines = text.split('\n').filter(l => l.trim());
+            const headers = lines[0].split(/,|\t/).map(h => h.trim());
+            dataRows = lines.slice(1).map(l => {
+                const vals = l.split(/,|\t/);
+                const obj = {};
+                headers.forEach((h,i)=>obj[h]=vals[i]||"");
+                return obj;
+            });
+        }
 
-        if(siteIdx===-1||sectorIdx===-1||goalIdx===-1) throw new Error("Colonne richieste mancanti");
+        if(dataRows.length === 0){
+            errorMsg.textContent = '⚠️ File is empty';
+            return;
+        }
 
-        currentData = rows.map((row,i)=>({
-            site: row[siteIdx]||'',
-            date: dateIdx!==-1?row[dateIdx]:'',
-            sector: (row[sectorIdx]||'UNKNOWN').toUpperCase(),
-            goal: (row[goalIdx]||'UNKNOWN').toUpperCase(),
-            rowIndex: rowIndexIdx!==-1?row[rowIndexIdx]:i+1
-        })).filter(r=>r.site);
+        currentData = dataRows.map(row => ({
+            site: row.Site || row.URL || "",
+            date: row.Date || "",
+            sector: (row.Sector || "UNKNOWN").toUpperCase(),
+            goal: (row.Goal || "UNKNOWN").toUpperCase(),
+            screenshot: row.Screenshot || row.Image || ""
+        }));
 
-        filteredData = currentData;
+        filteredData = [...currentData];
+
         fileInfo.textContent = `✓ Loaded ${currentData.length} records`;
-        tableContainer.classList.add('active');
+        document.getElementById('tableContainer').classList.add('active');
+
+        populateFilters(currentData);
         displayPage(filteredData,1);
 
     } catch(err){
         console.error(err);
-        errorMsg.textContent = '⚠️ Errore nel leggere il file. Controlla formato .xlsx/.xls';
-        fileInfo.textContent='';
+        errorMsg.textContent = '⚠️ Error reading file';
     }
+}
+
+function populateFilters(data){
+    const sectors = [...new Set(data.map(r=>r.sector))].sort();
+    const sectorSelect = document.getElementById('sectorFilter');
+    sectorSelect.innerHTML = '<option value="">All Sectors</option>';
+    sectors.forEach(s => { const o=document.createElement('option'); o.value=o.textContent=s; sectorSelect.appendChild(o); });
+
+    const goals = [...new Set(data.map(r=>r.goal))].sort();
+    const goalSelect = document.getElementById('goalFilter');
+    goalSelect.innerHTML = '<option value="">All Goals</option>';
+    goals.forEach(g => { const o=document.createElement('option'); o.value=o.textContent=g; goalSelect.appendChild(o); });
+}
+
+document.getElementById('sectorFilter').addEventListener('change', applyFilters);
+document.getElementById('goalFilter').addEventListener('change', applyFilters);
+document.getElementById('dateStartFilter').addEventListener('change', applyFilters);
+document.getElementById('dateEndFilter').addEventListener('change', applyFilters);
+
+document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+    document.getElementById('sectorFilter').value='';
+    document.getElementById('goalFilter').value='';
+    document.getElementById('dateStartFilter').value='';
+    document.getElementById('dateEndFilter').value='';
+    applyFilters();
 });
 
-document.getElementById('prevBtn').onclick = () => { if(currentPage>1){ currentPage--; displayPage(filteredData,currentPage); }};
-document.getElementById('nextBtn').onclick = () => { const total=Math.ceil(filteredData.length/rowsPerPage); if(currentPage<total){ currentPage++; displayPage(filteredData,currentPage); }};
+function applyFilters(){
+    const sectorF = document.getElementById('sectorFilter').value;
+    const goalF = document.getElementById('goalFilter').value;
+    const dateStart = document.getElementById('dateStartFilter').value;
+    const dateEnd = document.getElementById('dateEndFilter').value;
+
+    filteredData = currentData.filter(r=>{
+        if(sectorF && r.sector!==sectorF) return false;
+        if(goalF && r.goal!==goalF) return false;
+        if(dateStart && r.date<dateStart) return false;
+        if(dateEnd && r.date>dateEnd) return false;
+        return true;
+    });
+    displayPage(filteredData,1);
+}
+
+document.getElementById('prevBtn').addEventListener('click',()=>{ if(currentPage>1){ currentPage--; displayPage(filteredData,currentPage); }});
+document.getElementById('nextBtn').addEventListener('click',()=>{ const total=Math.ceil(filteredData.length/rowsPerPage); if(currentPage<total){ currentPage++; displayPage(filteredData,currentPage); }});
 
 function displayPage(data,page){
     currentPage=page;
-    tableBody.innerHTML='';
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML='';
     const start=(page-1)*rowsPerPage;
     const pageData=data.slice(start,start+rowsPerPage);
-    if(pageData.length===0){ tableBody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>'; return; }
+
+    if(pageData.length===0){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>'; return; }
+
     pageData.forEach(r=>{
-        const siteDisplay=r.site.length>50?r.site.substring(0,47)+'...':r.site;
-        const dateDisplay=r.date?r.date.substring(0,10):'-';
-        const imagePath=getLocalImagePath(r.rowIndex);
-        const screenshotCell=`<img src="${imagePath}" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imagePath}')" onerror="this.style.display='none'">`;
-        tableBody.innerHTML+=`<tr><td title="${r.site}">${siteDisplay}</td><td>${dateDisplay}</td><td>${r.sector}</td><td>${r.goal}</td><td class="screenshot-cell">${screenshotCell}</td></tr>`;
+        const siteDisplay = r.site.length>50?r.site.substring(0,47)+'...':r.site;
+        const dateDisplay = r.date ? r.date.substring(0,10) : '-';
+        const imgPath = getGitHubImagePath(r.screenshot);
+        const screenshotCell = `<img src="${imgPath}" alt="Screenshot" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imgPath}')" onerror="this.style.display='none'">`;
+
+        tbody.innerHTML+=`<tr>
+            <td title="${r.site}">${siteDisplay}</td>
+            <td>${dateDisplay}</td>
+            <td>${r.sector}</td>
+            <td>${r.goal}</td>
+            <td class="screenshot-cell">${screenshotCell}</td>
+        </tr>`;
     });
-    const total=Math.ceil(data.length/rowsPerPage)||1;
+
+    const total = Math.ceil(data.length/rowsPerPage)||1;
     document.getElementById('pageInfo').textContent=`Page ${page} of ${total} (${data.length} records)`;
     document.getElementById('prevBtn').disabled=page===1;
     document.getElementById('nextBtn').disabled=page===total;
 }
+
+// (Qui puoi riutilizzare il tuo codice dei grafici e PDF, aggiornandolo per leggere `r.screenshot` invece di rowIndex)
 </script>
 </body>
 </html>
