@@ -136,37 +136,57 @@ tr:hover { background: rgba(41, 98, 255, 0.05); }
 
 <script>
 // Variabili globali
-let currentData=[], filteredData=[], currentPage=1, rowsPerPage=10;
+// Variabili globali
+let currentData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
 
 // Funzioni modal
-function showImage(src){document.getElementById('modalImage').src=src;document.getElementById('imageModal').style.display='flex';}
-function closeModal(){document.getElementById('imageModal').style.display='none';}
-document.addEventListener('keydown', e=>{if(e.key==='Escape') closeModal();});
+function showImage(src) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+});
 
 // Funzione per ottenere percorso immagine da GitHub
-function getGitHubImagePath(name){return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${name}`;}
+function getGitHubImagePath(name) {
+    return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${name}`;
+}
 
 // Upload Excel
-document.getElementById('uploadArea').onclick=()=>document.getElementById('fileInput').click();
-document.getElementById('fileInput').addEventListener('change',e=>{const f=e.target.files[0];if(f) readExcel(f);});
+document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) readExcel(f);
+});
 
-function readExcel(file){
-    const reader=new FileReader();
-    reader.onload=function(e){
-        const data=new Uint8Array(e.target.result);
-        const wb=XLSX.read(data,{type:'array'});
-        const ws=wb.Sheets[wb.SheetNames[0]];
-        const json=XLSX.utils.sheet_to_json(ws,{defval:""});
-        if(json.length===0){document.getElementById('errorMsg').textContent='⚠️ File vuoto';return;}
-        currentData=json.map((row,i)=>({
-            site: row['Site']||row['Sito']||row['URL']||'',
-            date: row['Date']||row['Data']||'',
-            sector: (row['Sector']||row['Settore']||'').toUpperCase(),
-            goal: (row['Goal']||row['Obiettivo']||'').toUpperCase(),
-            screenshot: row['Screenshot']||row['Immagine']||`${i+1}.png`
+function readExcel(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+        if (json.length === 0) {
+            document.getElementById('errorMsg').textContent = '⚠️ File vuoto';
+            return;
+        }
+
+        // Mappatura aggiornata per il tuo file Excel
+        currentData = json.map((row, i) => ({
+            site: row['Site'] || '',
+            date: row['Last seen'] ? new Date(row['Last seen']).toISOString().substring(0, 10) : '',
+            sector: (row['SECTOR ATTACKED'] || '').toUpperCase(),
+            goal: (row['ATTACK GOAL'] || '').toUpperCase(),
+            screenshot: row['Screenshot'] || `${i + 1}.png`
         }));
-        filteredData=currentData;
-        document.getElementById('fileInfo').textContent=`✓ Caricati ${currentData.length} record`;
+
+        filteredData = currentData;
+        document.getElementById('fileInfo').textContent = `✓ Caricati ${currentData.length} record`;
         document.getElementById('tableContainer').classList.add('active');
         populateFilters();
         displayPage(1);
@@ -175,60 +195,87 @@ function readExcel(file){
 }
 
 // Popola filtri
-function populateFilters(){
-    const sectors=[...new Set(currentData.map(r=>r.sector))].sort();
-    const sectorSelect=document.getElementById('sectorFilter');
-    sectorSelect.innerHTML='<option value="">All Sectors</option>';
-    sectors.forEach(s=>{const opt=document.createElement('option');opt.value=s;opt.textContent=s;sectorSelect.appendChild(opt);});
+function populateFilters() {
+    const sectors = [...new Set(currentData.map(r => r.sector))].sort();
+    const sectorSelect = document.getElementById('sectorFilter');
+    sectorSelect.innerHTML = '<option value="">All Sectors</option>';
+    sectors.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        sectorSelect.appendChild(opt);
+    });
 
-    const goals=[...new Set(currentData.map(r=>r.goal))].sort();
-    const goalSelect=document.getElementById('goalFilter');
-    goalSelect.innerHTML='<option value="">All Goals</option>';
-    goals.forEach(g=>{const opt=document.createElement('option');opt.value=g;opt.textContent=g;goalSelect.appendChild(opt);});
+    const goals = [...new Set(currentData.map(r => r.goal))].sort();
+    const goalSelect = document.getElementById('goalFilter');
+    goalSelect.innerHTML = '<option value="">All Goals</option>';
+    goals.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g;
+        goalSelect.appendChild(opt);
+    });
 }
 
 // Filtri
-['dateStartFilter','dateEndFilter','sectorFilter','goalFilter'].forEach(id=>{
-    document.getElementById(id).addEventListener('change',applyFilters);
+['dateStartFilter', 'dateEndFilter', 'sectorFilter', 'goalFilter'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyFilters);
 });
-document.getElementById('resetFiltersBtn').addEventListener('click',()=>{
-    ['dateStartFilter','dateEndFilter','sectorFilter','goalFilter'].forEach(id=>document.getElementById(id).value='');
+document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+    ['dateStartFilter', 'dateEndFilter', 'sectorFilter', 'goalFilter'].forEach(id => document.getElementById(id).value = '');
     applyFilters();
 });
-function applyFilters(){
-    const ds=document.getElementById('dateStartFilter').value,de=document.getElementById('dateEndFilter').value,sf=document.getElementById('sectorFilter').value,gf=document.getElementById('goalFilter').value;
-    filteredData=currentData.filter(r=>{
-        if(ds && r.date<ds) return false;
-        if(de && r.date>de) return false;
-        if(sf && r.sector!==sf) return false;
-        if(gf && r.goal!==gf) return false;
+
+function applyFilters() {
+    const ds = document.getElementById('dateStartFilter').value;
+    const de = document.getElementById('dateEndFilter').value;
+    const sf = document.getElementById('sectorFilter').value;
+    const gf = document.getElementById('goalFilter').value;
+
+    filteredData = currentData.filter(r => {
+        if (ds && r.date < ds) return false;
+        if (de && r.date > de) return false;
+        if (sf && r.sector !== sf) return false;
+        if (gf && r.goal !== gf) return false;
         return true;
     });
     displayPage(1);
 }
 
-// Pagina
-document.getElementById('prevBtn').onclick=()=>{if(currentPage>1){displayPage(currentPage-1);}};
-document.getElementById('nextBtn').onclick=()=>{if(currentPage<Math.ceil(filteredData.length/rowsPerPage)){displayPage(currentPage+1);}};
-function displayPage(page){
-    currentPage=page;
-    const tbody=document.getElementById('tableBody');
-    tbody.innerHTML='';
-    const start=(page-1)*rowsPerPage;
-    const pageData=filteredData.slice(start,start+rowsPerPage);
-    if(pageData.length===0){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>';return;}
-    pageData.forEach(r=>{
-        const siteDisplay=r.site.length>50?r.site.substring(0,47)+'...':r.site;
-        const dateDisplay=r.date?r.date.substring(0,10):'-';
-        const imgPath=getGitHubImagePath(r.screenshot);
-        const screenshotCell=`<img src="${imgPath}" alt="Screenshot" onclick="event.stopPropagation();showImage('${imgPath}')" onerror="this.style.display='none'">`;
-        tbody.innerHTML+=`<tr><td title="${r.site}">${siteDisplay}</td><td>${dateDisplay}</td><td>${r.sector}</td><td>${r.goal}</td><td class="screenshot-cell">${screenshotCell}</td></tr>`;
+// Paginazione
+document.getElementById('prevBtn').onclick = () => {
+    if (currentPage > 1) displayPage(currentPage - 1);
+};
+document.getElementById('nextBtn').onclick = () => {
+    if (currentPage < Math.ceil(filteredData.length / rowsPerPage)) displayPage(currentPage + 1);
+};
+
+function displayPage(page) {
+    currentPage = page;
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    const start = (page - 1) * rowsPerPage;
+    const pageData = filteredData.slice(start, start + rowsPerPage);
+
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>';
+        return;
+    }
+
+    pageData.forEach(r => {
+        const siteDisplay = r.site.length > 50 ? r.site.substring(0, 47) + '...' : r.site;
+        const dateDisplay = r.date ? r.date.substring(0, 10) : '-';
+        const imgPath = getGitHubImagePath(r.screenshot);
+        const screenshotCell = `<img src="${imgPath}" alt="Screenshot" onclick="event.stopPropagation();showImage('${imgPath}')" onerror="this.style.display='none'">`;
+        tbody.innerHTML += `<tr><td title="${r.site}">${siteDisplay}</td><td>${dateDisplay}</td><td>${r.sector}</td><td>${r.goal}</td><td class="screenshot-cell">${screenshotCell}</td></tr>`;
     });
-    const total=Math.ceil(filteredData.length/rowsPerPage)||1;
-    document.getElementById('pageInfo').textContent=`Page ${page} of ${total} (${filteredData.length} records)`;
-    document.getElementById('prevBtn').disabled=page===1;
-    document.getElementById('nextBtn').disabled=page===total;
+
+    const total = Math.ceil(filteredData.length / rowsPerPage) || 1;
+    document.getElementById('pageInfo').textContent = `Page ${page} of ${total} (${filteredData.length} records)`;
+    document.getElementById('prevBtn').disabled = page === 1;
+    document.getElementById('nextBtn').disabled = page === total;
 }
+
 </script>
 </body>
 </html>
