@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-/* RESET & BASE */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body { 
@@ -20,14 +20,14 @@ body {
     line-height: 1.6;
 }
 
-/* CONTAINER */
+
 .container { 
     max-width: 1200px; 
     margin: 0 auto; 
     padding: 20px; 
 }
 
-/* HEADER */
+
 header { 
     text-align: center; 
     margin-bottom: 30px; 
@@ -48,7 +48,6 @@ h1 {
     letter-spacing: 1px;
 }
 
-/* UPLOAD SECTION */
 .upload-section { 
     background: #22253a; 
     padding: 30px; 
@@ -108,7 +107,6 @@ h1 {
     font-weight: 500;
 }
 
-/* TABLE CONTAINER */
 .table-container {
     background: #22253a;
     padding: 30px;
@@ -127,7 +125,7 @@ h1 {
     transform: translateY(0);
 }
 
-/* SEARCH & FILTERS */
+
 .search-box {
     padding: 12px 15px;
     background: #2c2f4d;
@@ -149,7 +147,7 @@ h1 {
     color: #8b95a5;
 }
 
-/* DATE INPUTS */
+
 .date-input-wrapper {
     position: relative;
     width: 100%;
@@ -213,7 +211,7 @@ input[type="date"]:focus {
     opacity: 1;
 }
 
-/* BUTTON */
+
 .upload-btn {
     padding: 12px 24px;
     background: #2962FF;
@@ -244,7 +242,7 @@ input[type="date"]:focus {
     transform: none;
 }
 
-/* TABLE */
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -291,7 +289,7 @@ tr:hover {
     text-align: center;
 }
 
-/* PAGINATION */
+
 .pagination {
     text-align: center;
     margin: 20px 0;
@@ -328,7 +326,6 @@ tr:hover {
     color: #a8b2c1;
 }
 
-/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -365,7 +362,7 @@ tr:hover {
     transform: scale(1.2);
 }
 
-/* CHARTS */
+
 .charts-grid-two-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -412,7 +409,7 @@ tr:hover {
     height: 300px;
 }
 
-/* RESPONSIVE */
+
 @media (max-width: 768px) {
     .charts-grid-two-cols {
         grid-template-columns: 1fr;
@@ -501,7 +498,7 @@ tr:hover {
     </div>
 </div>
 
-<!-- PRIMA RIGA: Torta Settori (sx) + Top 5 Settori Barre (dx) -->
+
 <div class="charts-grid-two-cols" id="chartsGridSectors" style="display:none;">
     <div class="chart-card">
         <h3>Distribuzione per Settore (Tutti)</h3>
@@ -514,7 +511,7 @@ tr:hover {
     </div>
 </div>
 
-<!-- SECONDA RIGA: Torta Obiettivi -->
+
 <div class="charts-grid-single" id="chartsGridGoalsPie" style="display:none;">
     <div class="chart-card">
         <h3>Distribuzione Obiettivi di Attacco (Tutti)</h3>
@@ -522,7 +519,7 @@ tr:hover {
     </div>
 </div>
 
-<!-- TERZA RIGA: Attacchi per Mese e Attacchi per Obiettivo (2 colonne) -->
+
 <div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
     <div class="chart-card">
         <h3>Attacchi per Mese</h3>
@@ -540,7 +537,7 @@ tr:hover {
     <img class="modal-content" id="modalImage">
 </div>
 
-<!-- Canvas nascosti per PDF -->
+
 <canvas id="pdfBarChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
 <canvas id="pdfLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="450"></canvas>
 <canvas id="pdfMultiLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
@@ -560,11 +557,11 @@ const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const errorMsg = document.getElementById('errorMsg');
 
-// Inizializza i date pickers con feedback visivo
+
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
 
-// Aggiungi effetto visivo quando si apre il calendario
+
 dateStartFilter.addEventListener('click', function() {
     this.showPicker && this.showPicker();
 });
@@ -573,7 +570,7 @@ dateEndFilter.addEventListener('click', function() {
     this.showPicker && this.showPicker();
 });
 
-// Feedback visivo quando viene selezionata una data
+
 dateStartFilter.addEventListener('change', function() {
     if(this.value) {
         this.style.borderColor = '#2962FF';
@@ -615,13 +612,12 @@ fileInput.addEventListener('change', (e) => {
     if(file) handleFile(file);
 });
 
-// Funzione per ottenere il percorso dell'immagine locale
-// Le immagini sono nella cartella "images" e il nome viene letto dalla colonna Screenshot del CSV
+
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
         return `images/${screenshotName.trim()}`;
     }
-    return ''; // Ritorna stringa vuota se non c'è screenshot
+    return ''; 
 }
 
 function showImage(imagePath) {
@@ -738,7 +734,7 @@ function handleFile(file){
                         rowIndex: i
                     };
                     
-                    // Debug: stampa i primi 5 record per verificare
+                 
                     if(i <= 5) {
                         console.log(`Row ${i}:`, {
                             site: rowData.site.substring(0, 50),
@@ -866,7 +862,7 @@ function displayPage(data, page){
         const siteDisplay = r.site.length > 50 ? r.site.substring(0, 47) + '...' : r.site;
         const dateDisplay = r.date ? r.date.substring(0, 10) : '-';
         
-        // Usa il nome dell'immagine dalla colonna Screenshot
+    
         const imagePath = getLocalImagePath(r.screenshot);
         const screenshotCell = imagePath ? `<img src="${imagePath}" alt="Screenshot" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imagePath}')" onerror="this.style.display='none'">` : '-';
         
@@ -1245,7 +1241,7 @@ function updateGoalsByMonthChart(data){
     });
 }
 
-// PDF GENERATION
+
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
     alert('⚠️ PDF generation feature coming soon!');
 });
