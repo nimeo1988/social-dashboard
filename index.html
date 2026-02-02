@@ -589,8 +589,10 @@ dateEndFilter.addEventListener('change', function() {
     }
 });
 
+// CLICK per aprire il file picker
 uploadArea.onclick = () => fileInput.click();
 
+// Drag & Drop
 uploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.classList.add('dragover');
@@ -603,13 +605,34 @@ uploadArea.addEventListener('dragleave', () => {
 uploadArea.addEventListener('drop', (e) => {
     e.preventDefault();
     uploadArea.classList.remove('dragover');
+
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
     const file = e.dataTransfer.files[0];
-    if(file) handleFile(file);
+
+    // Controllo estensione robusto (maiuscole/minuscole)
+    const allowed = ['csv', 'tsv', 'txt'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    if(!allowed.includes(ext)){
+        errorMsg.textContent = '⚠️ File non valido! Usa CSV, TSV o TXT.';
+        return;
+    }
+
+    handleFile(file);
 });
 
+// File picker
 fileInput.addEventListener('change', (e) => {
+    if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-    if(file) handleFile(file);
+
+    const allowed = ['csv', 'tsv', 'txt'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    if(!allowed.includes(ext)){
+        errorMsg.textContent = '⚠️ File non valido! Usa CSV, TSV o TXT.';
+        return;
+    }
+
+    handleFile(file);
 });
 
 
