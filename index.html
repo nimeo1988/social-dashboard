@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-/* RESET & BASE */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body { 
@@ -20,14 +20,14 @@ body {
     line-height: 1.6;
 }
 
-/* CONTAINER */
+
 .container { 
     max-width: 1200px; 
     margin: 0 auto; 
     padding: 20px; 
 }
 
-/* HEADER */
+
 header { 
     text-align: center; 
     margin-bottom: 30px; 
@@ -48,7 +48,7 @@ h1 {
     letter-spacing: 1px;
 }
 
-/* UPLOAD SECTION */
+
 .upload-section { 
     background: #22253a; 
     padding: 30px; 
@@ -108,7 +108,7 @@ h1 {
     font-weight: 500;
 }
 
-/* TABLE CONTAINER */
+
 .table-container {
     background: #22253a;
     padding: 30px;
@@ -127,7 +127,7 @@ h1 {
     transform: translateY(0);
 }
 
-/* SEARCH & FILTERS */
+
 .search-box {
     padding: 12px 15px;
     background: #2c2f4d;
@@ -149,7 +149,7 @@ h1 {
     color: #8b95a5;
 }
 
-/* DATE INPUTS */
+
 .date-input-wrapper {
     position: relative;
     width: 100%;
@@ -213,7 +213,6 @@ input[type="date"]:focus {
     opacity: 1;
 }
 
-/* BUTTON */
 .upload-btn {
     padding: 12px 24px;
     background: #2962FF;
@@ -244,7 +243,7 @@ input[type="date"]:focus {
     transform: none;
 }
 
-/* TABLE */
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -328,7 +327,6 @@ tr:hover {
     color: #a8b2c1;
 }
 
-/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -365,7 +363,7 @@ tr:hover {
     transform: scale(1.2);
 }
 
-/* CHARTS */
+
 .charts-grid-two-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -409,14 +407,15 @@ tr:hover {
 
 .chart-wrapper {
     position: relative;
-    height: 300px;
+    min-height: 400px; /* Aumentato da 300px */
+    height: 400px;
+    width: 100%;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .charts-grid-two-cols {
-        grid-template-columns: 1fr;
-    }
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
     
     h1 {
         font-size: 1.8rem;
@@ -501,7 +500,7 @@ tr:hover {
     </div>
 </div>
 
-<!-- PRIMA RIGA: Torta Settori (sx) + Top 5 Settori Barre (dx) -->
+
 <div class="charts-grid-two-cols" id="chartsGridSectors" style="display:none;">
     <div class="chart-card">
         <h3>Distribuzione per Settore (Tutti)</h3>
@@ -522,7 +521,7 @@ tr:hover {
     </div>
 </div>
 
-<!-- TERZA RIGA: Attacchi per Mese e Attacchi per Obiettivo (2 colonne) -->
+
 <div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
     <div class="chart-card">
         <h3>Attacchi per Mese</h3>
@@ -540,7 +539,7 @@ tr:hover {
     <img class="modal-content" id="modalImage">
 </div>
 
-<!-- Canvas nascosti per PDF -->
+
 <canvas id="pdfBarChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
 <canvas id="pdfLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="450"></canvas>
 <canvas id="pdfMultiLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
