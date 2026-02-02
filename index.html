@@ -548,7 +548,8 @@ fileInput.addEventListener('change', (e) => {
 
 function getLocalImagePath(rowIndex) {
     // Percorso per GitHub e locale
-    return `images/${rowIndex}.png`;
+    // rowIndex parte da 1, ma le immagini partono da 2.png
+    return `images/${rowIndex + 1}.png`;
 }
 
 function showImage(imagePath) {
