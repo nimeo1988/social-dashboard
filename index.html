@@ -1184,7 +1184,11 @@ function updateGoalsByMonthChart(data){
     data.forEach(r => {
         if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
     });
-    const sortedGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).map(([g]) => g);
+    const sortedGoals = Object.entries(goalCounts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 5)   // 👈 TOP 5 OBIETTIVI
+    .map(([g]) => g);
+
     
     const lineColors = [
         '#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0',
@@ -1208,8 +1212,13 @@ function updateGoalsByMonthChart(data){
     
     goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
         type: 'line',
-        data: {
-            labels: sortedMonths,
+        data: {const monthNames = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+const labels = sortedMonths.map(m => {
+    const [year, month] = m.split('-');
+    return `${monthNames[parseInt(month)-1]} ${year}`;
+});
+labels: sortedMonths,
             datasets: datasets
         },
         options: {
