@@ -532,6 +532,12 @@ fileInput.addEventListener('change', (e) => {
     if(file) handleFile(file);
 });
 
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) handleFile(file);
+});
+
+
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
         return 'images/' + screenshotName.trim();
@@ -710,17 +716,29 @@ document.getElementById('resetFiltersBtn').addEventListener('click', function() 
 });
 
 function applyFilters() {
-    const dateStart = document.getElementById('dateStartFilter').value;
-    const dateEnd = document.getElementById('dateEndFilter').value;
-    const sectorFilter = document.getElementById('sectorFilter').value;
-    const goalFilter = document.getElementById('goalFilter').value;
+    const dateStartVal = dateStartFilter.value;
+    const dateEndVal = dateEndFilter.value;
+    const sectorFilterVal = sectorFilter.value;
+    const goalFilterVal = goalFilter.value;
+
+    const dateStart = dateStartVal ? new Date(dateStartVal) : null;
+    const dateEnd = dateEndVal ? new Date(dateEndVal) : null;
 
     filteredData = currentData.filter(r => {
-        if(dateStart && r.date < dateStart) return false;
-        if(dateEnd && r.date > dateEnd) return false;
-        if(sectorFilter && r.sector !== sectorFilter) return false;
-        if(goalFilter && r.goal !== goalFilter) return false;
+        const rowDate = parseDateSafe(r.date);
+
+        if (dateStart && rowDate && rowDate < dateStart) return false;
+        if (dateEnd && rowDate && rowDate > dateEnd) return false;
+
+        if (sectorFilterVal && !r.sector.includes(sectorFilterVal)) return false;
+        if (goalFilterVal && !r.goal.includes(goalFilterVal)) return false;
+
         return true;
+    });
+
+    displayPage(filteredData, 1);
+    updateAllCharts(filteredData);
+}
     });
 
     displayPage(filteredData, 1);
