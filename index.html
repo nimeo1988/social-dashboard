@@ -1249,8 +1249,91 @@ function updateGoalsByMonthChart(data){
 
 // PDF GENERATION
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
-    alert('⚠️ PDF generation feature coming soon!');
+    if(filteredData.length === 0){
+        alert('No data to export!');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    const today = new Date();
+    const formatDate = (d) => `${('0'+d.getDate()).slice(-2)}/${('0'+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()}`;
+    const reportDate = formatDate(today);
+
+    const dateStart = document.getElementById('dateStartFilter').value || filteredData[0].date;
+    const dateEnd = document.getElementById('dateEndFilter').value || filteredData[filteredData.length-1].date;
+
+    const uniqueDomains = new Set(filteredData.map(r => r.site));
+    const uniqueSectors = new Set(filteredData.map(r => r.sector));
+    const uniqueGoals = new Set(filteredData.map(r => r.goal));
+
+    // --- PAGINA 1: Titolo + Sintesi ---
+    doc.setFontSize(18);
+    doc.text('PHISHING DASHBOARD REPORT', 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Campagne di Phishing - Analisi del Periodo`, 14, 28);
+    doc.text(`Periodo analizzato: dal ${dateStart} al ${dateEnd}`, 14, 34);
+    doc.text(`Report generato il: ${reportDate}`, 14, 40);
+
+    doc.setFontSize(14);
+    doc.text('SINTESI ESECUTIVA', 14, 50);
+    doc.setFontSize(11);
+    doc.text(`Nel periodo analizzato sono state identificate ${filteredData.length} campagne di phishing`, 14, 58);
+    doc.text(`distribuite su ${uniqueDomains.size} domini malevoli unici. Gli attacchi hanno colpito ${uniqueSectors.size} settori`, 14, 64);
+    doc.text(`diversi attraverso ${uniqueGoals.size} tipologie di attacco differenti.`, 14, 70);
+
+    // Statistiche chiave in box
+    const stats = [
+        {label: 'Campagne rilevate', value: filteredData.length},
+        {label: 'Domini malevoli', value: uniqueDomains.size},
+        {label: 'Settori colpiti', value: uniqueSectors.size},
+        {label: 'Tipologie attacco', value: uniqueGoals.size}
+    ];
+
+    let startY = 80;
+    stats.forEach(s => {
+        doc.setDrawColor(41,98,255);
+        doc.setFillColor(41,98,255,0.05);
+        doc.roundedRect(14, startY, 80, 12, 2, 2, 'FD');
+        doc.setFontSize(10);
+        doc.setTextColor(0,0,0);
+        doc.text(`${s.label}: ${s.value}`, 16, startY + 8);
+        startY += 18;
+    });
+
+    // --- PAGINA 2: Top 5 Settori ---
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.text('I settori più colpiti', 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Il grafico seguente evidenzia i 5 settori maggiormente bersagliati dagli attacchi phishing, con "${Object.entries(filteredData.reduce((acc,r)=>{
+        acc[r.sector] = (acc[r.sector]||0)+1;
+        return acc;
+    },{})).sort((a,b)=>b[1]-a[1])[0][0]}" in testa.`, 14, 28);
+
+    if(top5SectorsBarChart){
+        const canvas = document.getElementById('top5SectorsBarChart');
+        const imgData = canvas.toDataURL('image/png');
+        doc.addImage(imgData, 'PNG', 14, 40, 180, 90);
+    }
+
+    // --- PAGINA 3: Analisi temporale ---
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.text('Analisi temporale', 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Il grafico seguente mostra la distribuzione temporale delle campagne di phishing nel periodo analizzato.`, 14, 28);
+
+    if(monthChart){
+        const canvas = document.getElementById('monthChart');
+        const imgData = canvas.toDataURL('image/png');
+        doc.addImage(imgData, 'PNG', 14, 40, 180, 90);
+    }
+
+    doc.save('Phishing_Report.pdf');
 });
+
 
 
 </script>
