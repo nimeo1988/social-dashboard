@@ -21,16 +21,16 @@ const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const errorMsg = document.getElementById('errorMsg');
 
-const allSectorsChartEl = document.getElementById('allSectorsChartEl');
-const top5SectorsBarChartEl = document.getElementById('top5SectorsBarChartEl');
-const goalsPieChartEl = document.getElementById('goalsPieChartEl');
-const monthChartEl = document.getElementById('monthChartEl');
-const goalsByMonthChartEl = document.getElementById('goalsByMonthChartEl');
+const allSectorsChartEl = document.getElementById('allSectorsChart');
+const top5SectorsBarChartEl = document.getElementById('top5SectorsBarChart');
+const goalsPieChartEl = document.getElementById('goalsPieChart');
+const monthChartEl = document.getElementById('monthChart');
+const goalsByMonthChartEl = document.getElementById('goalsByMonthChart');
 
 // =======================
 // CSV UPLOAD
 // =======================
-uploadArea.onclick = () => fileInput.click();
+uploadArea.addEventListener('click', () => fileInput.click());
 uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
 uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
 uploadArea.addEventListener('drop', e => {
@@ -52,13 +52,9 @@ function handleFile(file) {
       const lines = text.split(/\r?\n/).filter(l => l.trim());
       if (lines.length === 0) throw new Error('CSV vuoto');
 
-      // Determina separatore
       const delimiter = lines[0].includes('\t') ? '\t' : ',';
       const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase());
 
-      console.log('Headers trovati:', headers);
-
-      // Mapping colonne reali del tuo CSV
       const siteIdx = headers.findIndex(h => h.includes('site') || h.includes('url'));
       const dateIdx = headers.findIndex(h => h.includes('last seen'));
       const sectorIdx = headers.findIndex(h => h.includes('sector attacked'));
@@ -71,14 +67,12 @@ function handleFile(file) {
 
       currentData = lines.slice(1).map(line => {
         const v = line.split(delimiter).map(x => x.trim());
-        
-        // Converte data da DD/MM/YYYY HH:MM -> YYYY-MM-DD
+        // Data: da DD/MM/YYYY HH:MM -> YYYY-MM-DD
         let formattedDate = '';
         if (v[dateIdx]) {
           const parts = v[dateIdx].split(' ')[0].split('/');
           if (parts.length === 3) formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
-
         return {
           site: v[siteIdx] || '',
           date: formattedDate,
@@ -86,13 +80,6 @@ function handleFile(file) {
           goal: (v[goalIdx] || '').toUpperCase()
         };
       });
-
-      console.log('Dati caricati:', currentData);
-
-      if (currentData.length === 0) {
-        errorMsg.textContent = '❌ Nessun dato trovato nel CSV';
-        return;
-      }
 
       filteredData = currentData;
       fileInfo.textContent = `✓ Loaded ${currentData.length} rows`;
@@ -131,9 +118,12 @@ function displayPage(data, page) {
         <td>${r.date}</td>
         <td>${r.sector}</td>
         <td>${r.goal}</td>
+        <td></td>
       </tr>
     `;
   });
+
+  document.getElementById('pageInfo').textContent = `Page ${currentPage}`;
 }
 
 // =======================
@@ -237,3 +227,13 @@ function updateAllCharts(data) {
   updateMonthChart(data);
   updateGoalsByMonthChart(data);
 }
+
+// =======================
+// PAGINATION BUTTONS
+// =======================
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentPage > 1) displayPage(filteredData, currentPage - 1);
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if ((currentPage * rowsPerPage) < filteredData.length) displayPage(filteredData, currentPage + 1);
+});
