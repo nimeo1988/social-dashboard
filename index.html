@@ -47,22 +47,20 @@ canvas{max-width:100%!important;max-height:100%!important}
 #modalImage{max-width:90%;max-height:90%;border-radius:8px}
 .close-modal{position:absolute;top:20px;right:30px;color:#fff;font-size:35px;cursor:pointer}
 @media (min-width:768px){
-.charts-row{grid-template-columns:1fr 1fr}
-.charts-row-stacked{grid-template-columns:1fr 1fr}
+.charts-row{grid-template-columns:1fr}
+.charts-row-stacked{grid-template-columns:1fr}
 .chart-card{padding:25px}
 .chart-card h3{font-size:16px}
-.chart-container{height:280px}
-.chart-full-width{grid-column:1/-1}
+.chart-container{height:350px}
 table{font-size:12px}
 th{font-size:11px;padding:14px 10px}
 td{padding:12px 10px}
 .screenshot-thumb{width:40px;height:40px}
 }
 @media (min-width:1024px){
-.container{max-width:1600px;margin:0 auto}
+.container{max-width:1200px;margin:0 auto}
 .charts-grid{padding:35px}
-.chart-container{height:350px}
-.chart-full-width .chart-container{height:300px}
+.chart-container{height:400px}
 table{font-size:13px}
 }
 </style>
@@ -151,13 +149,13 @@ table{font-size:13px}
 </div>
 
 <div class="charts-row-stacked">
-<div class="chart-card chart-full-width">
+<div class="chart-card">
 <h3>Attacchi per Mese</h3>
 <div class="chart-container">
 <canvas id="monthChart"></canvas>
 </div>
 </div>
-<div class="chart-card chart-full-width">
+<div class="chart-card">
 <h3>Attacchi per Obiettivo nel Tempo</h3>
 <div class="chart-container">
 <canvas id="goalsByMonthChart"></canvas>
