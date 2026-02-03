@@ -3,172 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Engineering Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Dashboard Attacchi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Rajdhani',sans-serif;background:#1a1d2e;color:#e8e9ed;line-height:1.6;min-height:100vh}
-.container{width:100%;max-width:100%;padding:0}
-#uploadArea{border:2px dashed #4a5568;border-radius:8px;padding:40px 20px;text-align:center;cursor:pointer;background:#2d3142;margin:20px;transition:all .3s}
-#uploadArea:hover,#uploadArea.dragover{border-color:#5a8db8;background:rgba(90,141,184,.1)}
-#uploadArea p{margin:10px 0}
-#fileInput{display:none}
-#fileInfo{color:#27ae60;margin:0 20px;font-weight:500}
-#errorMsg{color:#e74c3c;margin:0 20px;font-weight:500}
-.filter-section{background:#252837;padding:20px;display:none}
-.filter-section.active{display:block}
-.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:15px}
-.filter-group label{display:block;margin-bottom:8px;color:#a0a4b8;font-size:13px}
-input[type=date],select{width:100%;padding:10px;background:#2d3142;border:1px solid #3d4152;border-radius:6px;color:#e8e9ed;font-family:'Rajdhani',sans-serif}
-button{padding:10px 20px;background:#5a8db8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .3s}
-button:hover{background:#4a7da8;transform:translateY(-2px)}
-#resetFiltersBtn{background:#e74c3c;width:100%;margin-top:10px}
-#tableContainer{background:#1a1d2e;display:none}
-#tableContainer.active{display:block}
-.table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;font-size:11px;min-width:700px}
-th{background:#252837;padding:12px 8px;text-align:left;font-weight:600;color:#a0a4b8;border-bottom:1px solid #3d4152;font-size:10px;text-transform:uppercase}
-td{padding:10px 8px;border-bottom:1px solid #2d3142;color:#c5c7d0}
-tr:hover{background:rgba(90,141,184,.05)}
-.screenshot-thumb{width:35px;height:35px;object-fit:cover;border-radius:4px;cursor:pointer;background:#fff}
-.pagination{display:flex;justify-content:center;align-items:center;gap:15px;padding:15px;background:#1a1d2e;flex-wrap:wrap}
-.pagination button{padding:8px 16px;font-size:12px}
-#pageInfo{color:#a0a4b8;font-size:12px}
-.charts-grid{background:#1a1d2e;padding:15px}
-.charts-row{display:grid;grid-template-columns:1fr;gap:15px;margin-bottom:15px}
-.charts-row-stacked{display:grid;grid-template-columns:1fr;gap:15px;margin-bottom:15px}
-.chart-card{background:#252837;border-radius:8px;padding:20px}
-.chart-card h3{font-size:15px;margin-bottom:15px;color:#e8e9ed;font-weight:600}
-.chart-container{position:relative;width:100%;height:250px}
-canvas{max-width:100%!important;max-height:100%!important}
-#imageModal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.9);justify-content:center;align-items:center}
-#modalImage{max-width:90%;max-height:90%;border-radius:8px}
-.close-modal{position:absolute;top:20px;right:30px;color:#fff;font-size:35px;cursor:pointer}
-@media (min-width:768px){
-.charts-row{grid-template-columns:1fr}
-.charts-row-stacked{grid-template-columns:1fr}
-.chart-card{padding:25px}
-.chart-card h3{font-size:16px}
-.chart-container{height:350px}
-table{font-size:12px}
-th{font-size:11px;padding:14px 10px}
-td{padding:12px 10px}
-.screenshot-thumb{width:40px;height:40px}
+body{margin:0;font-family:sans-serif;background:#1a1d2e;color:#e8e9ed;}
+.container{max-width:1200px;margin:0 auto;padding:20px;}
+#uploadArea{border:2px dashed #4a5568;padding:40px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:20px;background:#2d3142;transition:0.3s;}
+#uploadArea.dragover,#uploadArea:hover{border-color:#5a8db8;background:rgba(90,141,184,.1);}
+#fileInput{display:none;}
+#fileInfo{color:#27ae60;margin:10px 0;}
+#errorMsg{color:#e74c3c;margin:10px 0;}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:12px;}
+th,td{padding:8px;border-bottom:1px solid #2d3142;}
+th{background:#252837;color:#a0a4b8;text-transform:uppercase;}
+tr:hover{background:rgba(90,141,184,.05);}
+.pagination{display:flex;justify-content:center;gap:10px;margin:10px 0;}
+button{padding:5px 10px;cursor:pointer;border:none;border-radius:4px;background:#5a8db8;color:#fff;}
+button:hover{background:#4a7da8;}
+.filter-section{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+input,select{padding:5px;border-radius:4px;background:#2d3142;color:#e8e9ed;border:1px solid #3d4152;}
+.charts-grid{display:flex;flex-direction:column;gap:20px;margin-top:20px;}
+.charts-row-horizontal{display:flex;flex-direction:column;gap:20px;}
+@media(min-width:768px){
+  .charts-row-horizontal{flex-direction:row;}
+  .chart-container{width:48%;}
 }
-@media (min-width:1024px){
-.container{max-width:1200px;margin:0 auto}
-.charts-grid{padding:35px}
-.chart-container{height:400px}
-table{font-size:13px}
-}
+.chart-container{width:100%;height:300px;background:#252837;padding:15px;border-radius:8px;}
 </style>
 </head>
 <body>
 <div class="container">
 
+<!-- UPLOAD -->
 <div id="uploadArea">
-<p style="font-size:18px">📂 Drag & Drop CSV/TSV file here</p>
-<p style="color:#a0a4b8">or click to select</p>
+<p>📂 Drag & Drop CSV here or click to select</p>
 </div>
 <input type="file" id="fileInput" accept=".csv,.tsv,.txt">
 <div id="fileInfo"></div>
 <div id="errorMsg"></div>
 
-<div class="filter-section" id="filterSection">
-<div class="filter-grid">
-<div class="filter-group">
-<label>📅 Start Date</label>
+<!-- FILTRI -->
+<div class="filter-section">
 <input type="date" id="dateStartFilter">
-</div>
-<div class="filter-group">
-<label>📅 End Date</label>
 <input type="date" id="dateEndFilter">
-</div>
-<div class="filter-group">
-<label>🏢 Sector</label>
-<select id="sectorFilter">
-<option value="">All Sectors</option>
-</select>
-</div>
-<div class="filter-group">
-<label>🎯 Goal</label>
-<select id="goalFilter">
-<option value="">All Goals</option>
-</select>
-</div>
-</div>
-<button id="resetFiltersBtn">🔄 Reset Filters</button>
+<select id="sectorFilter"><option value="">All Sectors</option></select>
+<select id="goalFilter"><option value="">All Goals</option></select>
+<button id="resetFiltersBtn">Reset Filters</button>
 </div>
 
-<div id="tableContainer">
-<div class="table-wrapper">
+<!-- TABELLA -->
 <table>
 <thead>
-<tr>
-<th>#</th>
-<th>SITE</th>
-<th>DATE</th>
-<th>SECTOR</th>
-<th>GOAL</th>
-<th>SCREENSHOT</th>
-</tr>
+<tr><th>#</th><th>Site</th><th>Date</th><th>Sector</th><th>Goal</th></tr>
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
-</div>
 <div class="pagination">
-<button id="prevBtn">← Previous</button>
+<button id="prevBtn">← Prev</button>
 <span id="pageInfo">Page 1</span>
 <button id="nextBtn">Next →</button>
 </div>
-</div>
 
+<!-- GRAFICI -->
 <div class="charts-grid">
-<div class="charts-row">
-<div class="chart-card">
-<h3>Distribuzione per Settore (Tutti)</h3>
-<div class="chart-container">
-<canvas id="allSectorsChart"></canvas>
-</div>
-</div>
-<div class="chart-card">
-<h3>Top 5 Settori Attaccati</h3>
-<div class="chart-container">
-<canvas id="top5SectorsBarChart"></canvas>
-</div>
-</div>
+  <!-- 1. Distribuzione Settore -->
+  <div class="chart-container"><canvas id="allSectorsChart"></canvas></div>
+  <!-- 2. Top 5 Settori -->
+  <div class="chart-container"><canvas id="top5SectorsBarChart"></canvas></div>
+  <!-- 3. Distribuzione Obiettivi -->
+  <div class="chart-container"><canvas id="goalsPieChart"></canvas></div>
+  <!-- 4 + 5. Attacchi per mese + obiettivi nel tempo -->
+  <div class="charts-row-horizontal">
+    <div class="chart-container"><canvas id="monthChart"></canvas></div>
+    <div class="chart-container"><canvas id="goalsByMonthChart"></canvas></div>
+  </div>
 </div>
 
-<div class="chart-card">
-<h3>Distribuzione Obiettivi di Attacco (Tutti)</h3>
-<div class="chart-container">
-<canvas id="goalsPieChart"></canvas>
-</div>
-</div>
+<script>
+// =======================
+// VARIABILI GLOBALI
+// =======================
+let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart;
+let currentData=[], filteredData=[], currentPage=1, rowsPerPage=10;
+const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#95a5a6','#34495e'];
 
-<div class="charts-row-stacked">
-<div class="chart-card">
-<h3>Attacchi per Mese</h3>
-<div class="chart-container">
-<canvas id="monthChart"></canvas>
-</div>
-</div>
-<div class="chart-card">
-<h3>Attacchi per Obiettivo nel Tempo</h3>
-<div class="chart-container">
-<canvas id="goalsByMonthChart"></canvas>
-</div>
-</div>
-</div>
-</div>
+// =======================
+// DOM ELEMENTS
+// =======================
+const uploadArea=document.getElementById('uploadArea');
+const fileInput=document.getElementById('fileInput');
+const fileInfo=document.getElementById('fileInfo');
+const errorMsg=document.getElementById('errorMsg');
+const allSectorsChartEl=document.getElementById('allSectorsChart');
+const top5SectorsBarChartEl=document.getElementById('top5SectorsBarChart');
+const goalsPieChartEl=document.getElementById('goalsPieChart');
+const monthChartEl=document.getElementById('monthChart');
+const goalsByMonthChartEl=document.getElementById('goalsByMonthChart');
+const tableBody=document.getElementById('tableBody');
+const pageInfo=document.getElementById('pageInfo');
+const dateStartFilter=document.getElementById('dateStartFilter');
+const dateEndFilter=document.getElementById('dateEndFilter');
+const sectorFilter=document.getElementById('sectorFilter');
+const goalFilter=document.getElementById('goalFilter');
+const resetFiltersBtn=document.getElementById('resetFiltersBtn');
 
-<div id="imageModal" onclick="closeModal()">
-<span class="close-modal">&times;</span>
-<img id="modalImage" src="" alt="Screenshot">
-</div>
+// =======================
+// UPLOAD CSV
+// =======================
+uploadArea.addEventListener('click',()=>fileInput.click());
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('dragover');});
+uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('dragover');handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
 
-<script src="dashboard.js"></script>
+function handleFile(file){
+if(!file) return;
+errorMsg.textContent=''; fileInfo.textContent=`Loading ${file.name}...`;
+const reader=new FileReader();
+reader.onload=e=>{
+  try{
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length===0) throw new Error('CSV vuoto');
+    const delimiter=lines[0].includes('\t')?'\t':',';
+    const headers=lines[0].split(delimiter).map(h=>h.trim().toLowerCase());
+    const siteIdx=headers.findIndex(h=>h.includes('site')||h.includes('url'));
+    const dateIdx=headers.findIndex(h=>h.includes('last seen'));
+    const sectorIdx=headers.findIndex(h=>h.includes('sector attacked'));
+    const goalIdx=headers.findIndex(h=>h.includes('attack goal'));
+    if(siteIdx===-1||sectorIdx===-1||goalIdx===-1){errorMsg.textContent='CSV columns not valid';return;}
+    currentData=lines.slice(1).map(l=>{
+      const v=l.split(delimiter).map(x=>x.trim());
+      let date='';
+      if(v[dateIdx]){const p=v[dateIdx].split(' ')[0].split('/'); if(p.length===3) date=`${p[2]}-${p[1]}-${p[0]}`;}
+      return {site:v[siteIdx]||'',date,sector:(v[sectorIdx]||'').toUpperCase(),goal:(v[goalIdx]||'').toUpperCase()};
+    });
+    filteredData=currentData;
+    fileInfo.textContent=`Loaded ${currentData.length} rows`;
+    populateFilters(); displayPage(filteredData,1); updateAllCharts(filteredData);
+  }catch(err){console.error(err);errorMsg.textContent='Error reading CSV';}
+};
+reader.readAsText(file);
+}
+
+// =======================
+// TABLE & PAGINATION
+// =======================
+function displayPage(data,page){currentPage=page;const start=(page-1)*rowsPerPage;const pageData=data.slice(start,start+rowsPerPage);tableBody.innerHTML='';pageData.forEach((r,i)=>tableBody.innerHTML+=`<tr><td>${start+i+1}</td><td>${r.site}</td><td>${r.date}</td><td>${r.sector}</td><td>${r.goal}</td></tr>`);pageInfo.textContent=`Page ${currentPage}`;}
+document.getElementById('prevBtn').addEventListener('click',()=>{if(currentPage>1) displayPage(filteredData,currentPage-1);});
+document.getElementById('nextBtn').addEventListener('click',()=>{if(currentPage*rowsPerPage<filteredData.length) displayPage(filteredData,currentPage+1);});
+
+// =======================
+// FILTERS
+// =======================
+function populateFilters(){
+const sectors=[...new Set(currentData.map(d=>d.sector))].sort();
+const goals=[...new Set(currentData.map(d=>d.goal))].sort();
+sectorFilter.innerHTML='<option value="">All Sectors</option>'+sectors.map(s=>`<option>${s}</option>`).join('');
+goalFilter.innerHTML='<option value="">All Goals</option>'+goals.map(g=>`<option>${g}</option>`).join('');
+}
+dateStartFilter.addEventListener('change',applyFilters);
+dateEndFilter.addEventListener('change',applyFilters);
+sectorFilter.addEventListener('change',applyFilters);
+goalFilter.addEventListener('change',applyFilters);
+resetFiltersBtn.addEventListener('click',()=>{dateStartFilter.value='';dateEndFilter.value='';sectorFilter.value='';goalFilter.value='';applyFilters();});
+function applyFilters(){filteredData=currentData.filter(d=>{if(dateStartFilter.value&&d.date<dateStartFilter.value) return false;if(dateEndFilter.value&&d.date>dateEndFilter.value) return false;if(sectorFilter.value&&d.sector!==sectorFilter.value) return false;if(goalFilter.value&&d.goal!==goalFilter.value) return false;return true;});displayPage(filteredData,1);updateAllCharts(filteredData);}
+
+// =======================
+// CHARTS
+// =======================
+function baseOptions(showLegend=false){return{responsive:true,maintainAspectRatio:false,elements:{point:{radius:0,hoverRadius:4}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:6,color:'#a0a4b8'},grid:{color:'#2d3142'}},y:{beginAtZero:true,ticks:{color:'#a0a4b8'},grid:{color:'#2d3142'}}},plugins:{legend:showLegend?{position:'bottom',labels:{color:'#c5c7d0',boxWidth:10}}:{display:false}}};}
+
+function updateSectorsPieChart(data){const c={};data.forEach(r=>c[r.sector]=(c[r.sector]||0)+1);if(allSectorsChart) allSectorsChart.destroy();allSectorsChart=new Chart(allSectorsChartEl,{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c),backgroundColor:colors}]},options:baseOptions(true)});}
+function updateTop5SectorsBarChart(data){const c={};data.forEach(r=>c[r.sector]=(c[r.sector]||0)+1);const s=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,5);if(top5SectorsBarChart) top5SectorsBarChart.destroy();top5SectorsBarChart=new Chart(top5SectorsBarChartEl,{type:'bar',data:{labels:s.map(x=>x[0]),datasets:[{data:s.map(x=>x[1]),backgroundColor:colors}]},options:{responsive:true,plugins:{legend:{display:false}}}});}
+function updateGoalsPieChart(data){const c={};data.forEach(r=>c[r.goal]=(c[r.goal]||0)+1);if(goalsPieChart) goalsPieChart.destroy();goalsPieChart=new Chart(goalsPieChartEl,{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c),backgroundColor:colors}]},options:baseOptions(true)});}
+function updateMonthChart(data){const m={};data.forEach(r=>{if(r.date){const k=r.date.substring(0,7);m[k]=(m[k]||0)+1;}});const labels=Object.keys(m).sort();if(monthChart) monthChart.destroy();monthChart=new Chart(monthChartEl,{type:'line',data:{labels,datasets:[{data:labels.map(l=>m[l]),borderColor:'#5a8db8',backgroundColor:'rgba(90,141,184,.15)',fill:true,tension:.4,borderWidth:2}]},options:baseOptions(false)});}
+function updateGoalsByMonthChart(data){const map={},goals=new Set();data.forEach(r=>{if(r.date){const m=r.date.substring(0,7);if(!map[m]) map[m]={};map[m][r.goal]=(map[m][r.goal]||0)+1;goals.add(r.goal);}});const months=Object.keys(map).sort();const datasets=[...goals].map((g,i)=>({label:g,data:months.map(m=>map[m][g]||0),borderColor:colors[i%colors.length],tension:.4,borderWidth:2,fill:false}));if(goalsByMonthChart) goalsByMonthChart.destroy();goalsByMonthChart=new Chart(goalsByMonthChartEl,{type:'line',data:{labels:months,datasets},options:baseOptions(true)});}
+function updateAllCharts(data){updateSectorsPieChart(data);updateTop5SectorsBarChart(data);updateGoalsPieChart(data);updateMonthChart(data);updateGoalsByMonthChart(data);}
+</script>
 </body>
 </html>
