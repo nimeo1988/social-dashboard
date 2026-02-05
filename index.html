@@ -576,8 +576,6 @@ let currentPage = 1;
 const rowsPerPage = 10;
 const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
 
-const fileInput = document.getElementById('fileInput');
-
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
         return `images/${screenshotName.trim()}`;
@@ -1971,7 +1969,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(err => {
             console.error(err);
-            errorMsg.textContent = "⚠️ Impossibile caricare data/dati.csv";
+            alert("⚠️ Impossibile caricare data/dati.csv - Assicurati che il file esista nella cartella 'data/'");
         });
 });
 
