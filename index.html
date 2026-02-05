@@ -1956,15 +1956,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== AUTO LOAD CSV =====
 document.addEventListener("DOMContentLoaded", () => {
-    // Determina il percorso base in base all'ambiente
-    let basePath = '';
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        basePath = '';
-    } else if (window.location.pathname.includes('/social-dashboard')) {
-        basePath = '/social-dashboard';
-    }
+    const csvPath = "/social-dashboard/data/dati.csv";
     
-    const csvPath = basePath + "/data/dati.csv";
+    console.log('Caricamento CSV da:', csvPath);
 
     fetch(csvPath)
         .then(response => {
@@ -1972,12 +1966,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return response.text();
         })
         .then(text => {
+            console.log('✓ CSV caricato! Righe:', text.split('\n').length);
             const file = new File([text], "dati.csv", { type: "text/csv" });
             handleFile(file);
         })
         .catch(err => {
-            console.error('Errore caricamento CSV:', err);
-            alert("⚠️ Impossibile caricare data/dati.csv\n\nAssicurati che:\n1. Il file esista nella cartella 'data/'\n2. Sia stato pushato su GitHub\n3. GitHub Pages sia abilitato");
+            console.error('✗ Errore:', err);
+            alert("⚠️ Errore caricamento CSV\n\nAssicurati che data/dati.csv sia su GitHub");
         });
 });
 
