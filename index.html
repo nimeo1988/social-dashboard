@@ -1933,7 +1933,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
 // AUTO LOAD CSV ON PAGE LOAD
 document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = 'data/dati.csv';
+    const csvPath = '/social-dashboard/data/dati.csv';
     
     fetch(csvPath)
         .then(response => {
@@ -1948,32 +1948,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(err => {
             console.warn('⚠️ Auto-load fallito: ' + err.message);
-            console.log('📁 Carica manualmente un file CSV per iniziare');
+            console.log('📁 Carica CSV da: /social-dashboard/data/dati.csv');
         });
 });
 
 </script>
 
-// ===== AUTO LOAD CSV =====
-document.addEventListener("DOMContentLoaded", () => {
-    const csvPath = "/social-dashboard/data/dati.csv";
-    
-    console.log('Caricamento CSV da:', csvPath);
-
-    fetch(csvPath)
-        .then(response => {
-            if (!response.ok) throw new Error("CSV non trovato");
-            return response.text();
-        })
-        .then(text => {
-            console.log('✓ CSV caricato! Righe:', text.split('\n').length);
-            const file = new File([text], "dati.csv", { type: "text/csv" });
-            handleFile(file);
-        })
-        .catch(err => {
-            console.error('✗ Errore:', err);
-            alert("⚠️ Errore caricamento CSV\n\nAssicurati che data/dati.csv sia su GitHub");
-        });
-});
-
-</script>
+</script></body>
+</html>
