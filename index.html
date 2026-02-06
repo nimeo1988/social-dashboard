@@ -1554,10 +1554,9 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const margin = 40;
-
         const today = new Date().toLocaleDateString('it-IT');
 
-        // Funzioni per header e footer
+        // --- HEADER ---
         function addHeader() {
             pdf.setFillColor(41, 98, 255);
             pdf.rect(0, 0, pageWidth, 50, 'F');
@@ -1567,6 +1566,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             pdf.text('ANALISI CAMPAGNE PHISHING', margin, 32);
         }
 
+        // --- FOOTER ---
         function addFooter(pageNum, totalPages) {
             pdf.setTextColor(150, 150, 150);
             pdf.setFontSize(9);
@@ -1576,7 +1576,6 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
         // --- PAGINA 1: INTRO ---
         addHeader();
-
         pdf.setTextColor(0, 0, 0);
         pdf.setFont('Helvetica', 'bold');
         pdf.setFontSize(12);
@@ -1591,20 +1590,20 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             margin, 88, { maxWidth: pageWidth - 2 * margin, lineHeightFactor: 1.5 }
         );
 
-        // --- Aggiungi i grafici della dashboard ---
-        const charts = document.querySelectorAll('.dashboard-chart'); // seleziona tutti i grafici visibili
+        // --- AGGIUNGI GRAFICI ---
+        const chartCards = document.querySelectorAll('.chart-card');
         let yPos = 140;
 
-        for (let i = 0; i < charts.length; i++) {
-            const chartCanvas = charts[i].querySelector('canvas');
+        for (let i = 0; i < chartCards.length; i++) {
+            const chartCanvas = chartCards[i].querySelector('canvas');
             if (!chartCanvas) continue;
 
             const chartImg = chartCanvas.toDataURL('image/png');
-            const chartHeight = 180; // altezza fissa
+            const chartHeight = 180;
             pdf.addImage(chartImg, 'PNG', margin, yPos, pageWidth - 2 * margin, chartHeight);
 
-            // aggiungi descrizione se disponibile (data attribute o testo accanto al grafico)
-            const desc = charts[i].dataset.description || 'Descrizione non disponibile per questo grafico.';
+            // descrizione del grafico
+            const desc = chartCards[i].dataset.description || 'Descrizione non disponibile per questo grafico.';
             pdf.setFont('Helvetica', 'normal');
             pdf.setFontSize(9);
             pdf.setTextColor(100, 100, 100);
@@ -1612,7 +1611,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
             yPos += chartHeight + 40;
 
-            // se lo spazio finisce, aggiungi una nuova pagina
+            // aggiungi nuova pagina se serve
             if (yPos + chartHeight + 60 > pageHeight) {
                 addFooter(pdf.getNumberOfPages(), pdf.getNumberOfPages());
                 pdf.addPage();
