@@ -462,6 +462,18 @@ h1 {
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
+<div class="upload-section">
+    <h2>UPLOAD CSV DATA</h2>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    <div id="fileInfo" class="file-info"></div>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
+
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
@@ -627,7 +639,7 @@ fileInput.addEventListener('change', (e) => {
 
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
-        return `https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/images/${screenshotName.trim()}`;
+        return `images/${screenshotName.trim()}`;
     }
     return '';
 }
@@ -1880,7 +1892,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
 // AUTO LOAD CSV ON PAGE LOAD
 document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = 'https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/data/dati.csv';
+    const csvPath = '/social-dashboard/data/dati.csv';
     
     fetch(csvPath)
         .then(response => {
