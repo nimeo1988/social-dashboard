@@ -627,7 +627,7 @@ fileInput.addEventListener('change', (e) => {
 
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
-        return `images/${screenshotName.trim()}`;
+        return `https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/images/${screenshotName.trim()}`;
     }
     return '';
 }
