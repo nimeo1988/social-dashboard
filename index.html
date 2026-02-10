@@ -286,6 +286,20 @@ box-shadow: 0 4px 12px rgba(41, 98, 255, 0.5);
 text-align: center;
 }
 
+.image-loading {
+display: inline-block;
+width: 80px;
+height: 50px;
+background: rgba(41, 98, 255, 0.1);
+border: 2px dashed #2c2f4d;
+border-radius: 6px;
+animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 0.5; }
+50% { opacity: 1; }
+}
 
 .pagination {
 text-align: center;
@@ -442,6 +456,15 @@ margin: 0 auto 20px;
 @keyframes spin {
 0% { transform: rotate(0deg); }
 100% { transform: rotate(360deg); }
+}
+
+.image-error {
+display: inline-block;
+padding: 5px 10px;
+background: #e74c3c;
+color: white;
+border-radius: 4px;
+font-size: 0.75rem;
 }
 
 
@@ -645,14 +668,25 @@ fileInput.addEventListener('change', (e) => {
     if(file) handleFile(file);
 });
 
+// ============ FUNZIONE CHIAVE: GENERARE URL IMMAGINE ============
 function getLocalImagePath(screenshotName) {
-    if (screenshotName && screenshotName.trim() !== '') {
-        const fileName = encodeURIComponent(screenshotName.trim());
-        return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${fileName}`;
+    if (!screenshotName || screenshotName.trim() === '') {
+        return '';
     }
-    return '';
-}  // <-- chiusura della funzione aggiunta
-
+    
+    const fileName = screenshotName.trim();
+    
+    // METODO 1: GitHub Pages (se abilitato)
+    // Decommentare se GitHub Pages è attivo nel tuo repo
+    // return `https://nimeo1988.github.io/social-dasboard/images/${fileName}`;
+    
+    // METODO 2: Raw GitHub Content con bypass CORS
+    // Usa jsdelivr come CDN per GitHub (ha CORS abilitato)
+    return `https://cdn.jsdelivr.net/gh/nimeo1988/social-dasboard@main/images/${fileName}`;
+    
+    // METODO 3: Alternativa con rawcdn.githack (fallback)
+    // return `https://rawcdn.githack.com/nimeo1988/social-dasboard/main/images/${fileName}`;
+}
 
 function showImage(imagePath) {
     const modal = document.getElementById('imageModal');
@@ -979,7 +1013,25 @@ function displayPage(data, page){
         const dateDisplay = r.date ? formatDateForDisplay(r.date) : '-';
         
         const imagePath = getLocalImagePath(r.screenshot);
-        const screenshotCell = imagePath ? `<img src="${imagePath}" alt="Screenshot" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imagePath}')" onerror="this.style.display='none'">` : '-';
+        
+        let screenshotCell = '-';
+        if(imagePath) {
+            screenshotCell = `
+                <img 
+                    src="${imagePath}" 
+                    alt="Screenshot" 
+                    class="screenshot-thumbnail" 
+                    onclick="event.stopPropagation(); showImage('${imagePath}')" 
+                    onerror="
+                        this.style.display='none';
+                        console.warn('Immagine non caricata:', '${imagePath}');
+                        this.nextElementSibling.style.display='inline-block';
+                    "
+                    onload="console.log('✓ Immagine caricata:', '${imagePath}')"
+                >
+                <span style="display:none;color:#e74c3c;font-size:0.75rem;">❌ N/A</span>
+            `;
+        }
         
         tbody.innerHTML += `
         <tr>
