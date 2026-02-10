@@ -647,10 +647,12 @@ fileInput.addEventListener('change', (e) => {
 
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
-        return `images/${screenshotName.trim()}`;
+        const fileName = encodeURIComponent(screenshotName.trim());
+        return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${fileName}`;
     }
     return '';
-}
+}  // <-- chiusura della funzione aggiunta
+
 
 function showImage(imagePath) {
     const modal = document.getElementById('imageModal');
