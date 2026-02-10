@@ -651,14 +651,9 @@
 -         const fileName = encodeURIComponent(screenshotName.trim());
 -         return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${fileName}`;
 +         const trimmed = screenshotName.trim();
-+         
-+         // Non usare encodeURIComponent per i file PNG - causa problemi di URL
-+         // GitHub raw content accetta direttamente i nomi dei file
++         // Usa il nome file direttamente - GitHub raw content accetta i PNG normali
 +         const imageUrl = `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${trimmed}`;
-+         
-+         // Log per debug
-+         console.log('Immagine cercata:', trimmed, '-> URL:', imageUrl);
-+         
++         console.log('📷 Screenshot:', trimmed, '-> URL:', imageUrl);
 +         return imageUrl;
       }
       return '';
