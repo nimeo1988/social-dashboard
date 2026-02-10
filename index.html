@@ -643,14 +643,15 @@ uploadArea.addEventListener('drop', (e) => {
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if(file) handleFile(file);
-});
-
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
-        return `images/${screenshotName.trim()}`;
+        // EncodeURIComponent evita problemi con spazi o caratteri speciali
+        const fileName = encodeURIComponent(screenshotName.trim());
+        return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${fileName}`;
     }
     return '';
 }
+
 
 function showImage(imagePath) {
     const modal = document.getElementById('imageModal');
