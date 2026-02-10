@@ -551,7 +551,20 @@ h1 {
     <button id="prevBtn">← Previous</button>
     <span id="pageInfo">Page 1</span>
     <button id="nextBtn">Next →</button>
-
+    <span style="margin-left: 20px; display: flex; align-items: center; gap: 8px;">
+        <label for="jumpPage" style="font-size: 0.9rem; color: #a8b2c1;">Jump to page:</label>
+        <input 
+            type="number" 
+            id="jumpPage" 
+            min="1" 
+            max="1" 
+            style="width: 60px; padding: 8px; background: #2c2f4d; border: 2px solid #3a3d5c; border-radius: 6px; color: #fff; font-family: 'Rajdhani', sans-serif; text-align: center;"
+            placeholder="Page #"
+        >
+        <button id="jumpBtn" class="upload-btn" style="background: #9b59b6; padding: 0.6rem 1rem; font-size: 0.85rem;">
+            Go
+        </button>
+    </span>
 </div>
 
 </div>
@@ -811,7 +824,15 @@ function handleFile(file){
                         current += char;
                     }
                 }
-                result.push(current.trim());
+                
+                // Ultimo campo
+                current = current.trim();
+                // Se inizia e finisce con virgolette, rimuovile
+                if (current.startsWith('"') && current.endsWith('"')) {
+                    current = current.slice(1, -1);
+                }
+                result.push(current);
+                
                 return result;
             }
             
@@ -972,6 +993,28 @@ document.getElementById('nextBtn').onclick = () => {
     }
 };
 
+// Jump to page
+document.getElementById('jumpBtn').addEventListener('click', () => {
+    const jumpInput = document.getElementById('jumpPage');
+    const pageNum = parseInt(jumpInput.value);
+    const total = Math.ceil(filteredData.length / rowsPerPage);
+    
+    if (pageNum >= 1 && pageNum <= total) {
+        displayPage(filteredData, pageNum);
+        jumpInput.value = '';
+    } else {
+        alert(`⚠️ Inserisci un numero tra 1 e ${total}`);
+        jumpInput.value = '';
+    }
+});
+
+// Permetti di saltare pagina premendo Enter
+document.getElementById('jumpPage').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('jumpBtn').click();
+    }
+});
+
 function formatDateForDisplay(isoDate) {
     // Converte yyyy-mm-dd o yyyy-mm-dd HH:MM:SS in dd/mm/yyyy HH:MM:SS
     if (!isoDate || isoDate.length < 10) return '-';
@@ -998,10 +1041,17 @@ function formatDateForDisplay(isoDate) {
 
 function displayPage(data, page){
     currentPage = page;
+    
+    // Ordina per data DESC (ultimo al primo)
+    const sortedData = [...data].sort((a, b) => {
+        if (!a.date || !b.date) return 0;
+        return b.date.localeCompare(a.date);
+    });
+    
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
     const start = (page - 1) * rowsPerPage;
-    const pageData = data.slice(start, start + rowsPerPage);
+    const pageData = sortedData.slice(start, start + rowsPerPage);
 
     if(pageData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>';
@@ -1043,10 +1093,13 @@ function displayPage(data, page){
         </tr>`;
     });
 
-    const total = Math.ceil(data.length / rowsPerPage) || 1;
-    document.getElementById('pageInfo').textContent = `Page ${page} of ${total} (${data.length} records)`;
+    const total = Math.ceil(sortedData.length / rowsPerPage) || 1;
+    document.getElementById('pageInfo').textContent = `Page ${page} of ${total} (${sortedData.length} records)`;
     document.getElementById('prevBtn').disabled = page === 1;
     document.getElementById('nextBtn').disabled = page === total;
+    
+    // Aggiorna il max dell'input jump
+    document.getElementById('jumpPage').max = total;
 }
 
 function updateAllCharts(data) {
