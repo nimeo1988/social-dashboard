@@ -1697,9 +1697,64 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         const pdf = new jsPDF('p', 'pt', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 40;
-        const today = new Date().toLocaleDateString('en-US');
+        const margin = 50;
+        const today = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
 
+        // === PAGE 1: TITLE PAGE ===
+        function addTitlePage() {
+            // Background gradient effect
+            pdf.setFillColor(41, 98, 255);
+            pdf.rect(0, 0, pageWidth, 150, 'F');
+            
+            // Title
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('Helvetica', 'bold');
+            pdf.setFontSize(32);
+            pdf.text('PHISHING CAMPAIGN', margin, 80);
+            pdf.text('ANALYSIS REPORT', margin, 120);
+            
+            // Line separator
+            pdf.setDrawColor(255, 255, 255);
+            pdf.setLineWidth(2);
+            pdf.line(margin, 135, pageWidth - margin, 135);
+            
+            // Subtitle
+            pdf.setTextColor(100, 100, 100);
+            pdf.setFont('Helvetica', 'normal');
+            pdf.setFontSize(14);
+            pdf.text('Social Engineering Intelligence Database', margin, 180);
+            
+            // Stats box
+            pdf.setFillColor(245, 245, 245);
+            pdf.rect(margin, 220, pageWidth - 2*margin, 120, 'F');
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineWidth(1);
+            pdf.rect(margin, 220, pageWidth - 2*margin, 120);
+            
+            pdf.setTextColor(50, 50, 50);
+            pdf.setFont('Helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text('Report Summary', margin + 15, 245);
+            
+            pdf.setFont('Helvetica', 'normal');
+            pdf.setFontSize(11);
+            pdf.text(`Generated: ${today}`, margin + 15, 270);
+            pdf.text(`Total Campaigns: ${filteredData.length}`, margin + 15, 290);
+            pdf.text(`Unique Sites: ${[...new Set(filteredData.map(r => r.site))].length}`, margin + 15, 310);
+            pdf.text(`Sectors Identified: ${[...new Set(filteredData.map(r => r.sector))].length}`, margin + 15, 330);
+            
+            // Footer text
+            pdf.setTextColor(150, 150, 150);
+            pdf.setFont('Helvetica', 'italic');
+            pdf.setFontSize(9);
+            pdf.text('Confidential - For authorized personnel only', margin, pageHeight - 40);
+            pdf.text(`Page 1`, pageWidth - margin - 20, pageHeight - 40);
+        }
+        
         function addHeader() {
             pdf.setFillColor(41, 98, 255);
             pdf.rect(0, 0, pageWidth, 50, 'F');
@@ -1708,78 +1763,87 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             pdf.setFontSize(18);
             pdf.text('PHISHING CAMPAIGN ANALYSIS', margin, 32);
         }
-
+        
         function addFooter(pageNum, totalPages) {
             pdf.setTextColor(150, 150, 150);
+            pdf.setFont('Helvetica', 'normal');
             pdf.setFontSize(9);
-            pdf.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
-            pdf.text(`Report generated on ${today}`, pageWidth - margin, pageHeight - 20, { align: 'right' });
+            pdf.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2 - 20, pageHeight - 20, { align: 'center' });
+            pdf.text(`Report Date: ${today}`, margin, pageHeight - 20);
+            pdf.text('Confidential', pageWidth - margin - 40, pageHeight - 20, { align: 'right' });
         }
-
+        
+        // Page 1 - Title
+        addTitlePage();
+        pdf.addPage();
+        
+        // Pages with charts
         addHeader();
+        
         pdf.setTextColor(0, 0, 0);
         pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text('Overview', margin, 70);
-
+        pdf.setFontSize(14);
+        pdf.text('Executive Summary', margin, 80);
+        
         pdf.setFont('Helvetica', 'normal');
         pdf.setFontSize(10);
         pdf.setTextColor(80, 80, 80);
-        pdf.text(
-            'This report displays dashboard charts for filtered phishing campaigns.',
-            margin, 88, { maxWidth: pageWidth - 2 * margin, lineHeightFactor: 1.5 }
-        );
-
+        const summaryText = `This report presents a comprehensive analysis of phishing campaigns detected in the intelligence database. 
+The dashboard contains ${filteredData.length} verified phishing attempts targeting ${[...new Set(filteredData.map(r => r.sector))].length} different sectors. 
+Key statistics and temporal trends are visualized below to assist in threat assessment and mitigation strategies.`;
+        
+        pdf.text(summaryText, margin, 100, { maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.6 });
+        
+        let yPos = 150;
+        
+        // Add all charts
         const chartCards = document.querySelectorAll('.chart-card');
-        let yPos = 140;
-
+        let pageNum = 2;
+        let chartsAdded = 0;
+        
         for (let i = 0; i < chartCards.length; i++) {
             const chartCanvas = chartCards[i].querySelector('canvas');
             if (!chartCanvas) continue;
-
-            const chartImg = chartCanvas.toDataURL('image/png');
-            const chartHeight = 160;
-            pdf.addImage(chartImg, 'PNG', margin, yPos, pageWidth - 2 * margin, chartHeight);
-
-            yPos += chartHeight + 30;
-
-            if (yPos + chartHeight + 60 > pageHeight) {
-                addFooter(pdf.getNumberOfPages(), pdf.getNumberOfPages());
+            
+            // Check if we need a new page
+            if (yPos > pageHeight - 120) {
+                addFooter(pageNum, chartCards.length + 1);
                 pdf.addPage();
                 addHeader();
-                yPos = 70;
+                pageNum++;
+                yPos = 80;
             }
+            
+            // Chart title
+            const chartTitle = chartCards[i].querySelector('h3').textContent;
+            pdf.setFont('Helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.setTextColor(41, 98, 255);
+            pdf.text(chartTitle, margin, yPos);
+            yPos += 15;
+            
+            // Convert canvas to image
+            const chartImg = chartCanvas.toDataURL('image/png');
+            const chartHeight = 100;
+            const chartWidth = pageWidth - 2*margin;
+            
+            pdf.addImage(chartImg, 'PNG', margin, yPos, chartWidth, chartHeight);
+            yPos += chartHeight + 20;
+            chartsAdded++;
         }
-
-        addFooter(pdf.getNumberOfPages(), pdf.getNumberOfPages());
-
-        pdf.save(`Report_${today.replace(/\//g,'-')}.pdf`);
-
+        
+        // Final footer
+        addFooter(pageNum, pageNum);
+        
+        // Save PDF
+        pdf.save(`Phishing_Report_${today.replace(/\s+/g, '_')}.pdf`);
+        
     } catch (err) {
         console.error('PDF generation error:', err);
-        alert('Error generating PDF.');
+        alert('❌ Error generating PDF: ' + err.message);
     } finally {
         document.getElementById('loadingOverlay').classList.remove('active');
     }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = '/social-dasboard/data/dati.csv';
-    
-    fetch(csvPath)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('CSV file not found');
-            }
-            return response.text();
-        })
-        .then(text => {
-            const file = new File([text], 'dati.csv', { type: 'text/csv' });
-            handleFile(file);
-        })
-        .catch(err => {
-            console.warn('Auto-load skipped: ' + err.message);
-        });
 });
 
 </script>
