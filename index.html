@@ -1094,6 +1094,15 @@ function handleFile(file){
             displayPage(filteredData, 1);
             updateAllCharts(filteredData);
             
+            // ===== AUTO CHECK STATUS DOPO CARICAMENTO =====
+            setTimeout(() => {
+                if (currentData && currentData.length > 0) {
+                    const uniqueSites = [...new Set(currentData.map(r => r.site))];
+                    console.log('🚀 Avvio check automatico per', uniqueSites.length, 'siti');
+                    checkMultipleSites(uniqueSites);
+                }
+            }, 1500);
+            
             setTimeout(() => {
                 document.getElementById('tableContainer').scrollIntoView({behavior:'smooth'});
             }, 300);
@@ -2238,6 +2247,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(text => {
             const file = new File([text], 'dati.csv', { type: 'text/csv' });
             handleFile(file);
+            
+            // ===== AUTO CHECK STATUS DOPO CARICAMENTO =====
+            setTimeout(() => {
+                if (currentData && currentData.length > 0) {
+                    const uniqueSites = [...new Set(currentData.map(r => r.site))];
+                    console.log('🚀 Avvio check automatico per', uniqueSites.length, 'siti');
+                    checkMultipleSites(uniqueSites);
+                }
+            }, 1500); // Attendi 1.5 secondi dopo il caricamento CSV
         })
         .catch(err => {
             console.warn('⚠️ Auto-load fallito: ' + err.message);
