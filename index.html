@@ -1884,6 +1884,56 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('📁 Carica manualmente un file CSV per iniziare');
         });
 });
+// ================== PING SITI ==================
+async function pingSite(url) {
+    try {
+        // Aggiungi 'https://' se manca
+        let fullUrl = url;
+        if (!/^https?:\/\//i.test(url)) fullUrl = 'https://' + url;
+
+        // Prova a fare una richiesta HEAD
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000); // timeout 5s
+
+        const response = await fetch(fullUrl, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+        clearTimeout(timeout);
+        // Se non va in errore, consideriamo online
+        return '✅ Online';
+    } catch (err) {
+        return '❌ Offline';
+    }
+}
+
+async function pingAllSites() {
+    const tbody = document.getElementById('tableBody');
+    const rows = tbody.querySelectorAll('tr');
+    for (let i = 0; i < rows.length; i++) {
+        const siteCell = rows[i].cells[0];
+        if (!siteCell) continue;
+        const url = siteCell.textContent.trim();
+        if (!url) continue;
+
+        // Crea/aggiorna la colonna "Status"
+        let statusCell = rows[i].cells[5];
+        if (!statusCell) {
+            statusCell = rows[i].insertCell(5);
+        }
+        statusCell.textContent = '⏳ Pinging...';
+        const status = await pingSite(url);
+        statusCell.textContent = status;
+    }
+}
+
+// Pulsante per ping
+const pingBtn = document.createElement('button');
+pingBtn.textContent = 'Ping All Sites';
+pingBtn.className = 'upload-btn';
+pingBtn.style.background = '#f39c12';
+pingBtn.style.marginBottom = '15px';
+pingBtn.onclick = pingAllSites;
+
+// Inseriamo il pulsante sopra la tabella
+document.getElementById('tableContainer').insertBefore(pingBtn, document.querySelector('table'));
 
 </script>
 
