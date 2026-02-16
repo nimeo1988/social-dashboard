@@ -2005,19 +2005,29 @@ function updateGoalsByMonthChart(data){
     });
 }
 
-async function createChartImage(config, width = 1000, height = 500) {
+async function createChartImage(config, width = 1200, height = 500) {
     return new Promise((resolve) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        
-        const chart = new Chart(canvas, config);
-        
-        setTimeout(() => {
-            const imageData = canvas.toDataURL('image/png');
-            chart.destroy();
-            resolve(imageData);
-        }, 100);
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            
+            const chart = new Chart(canvas, config);
+            
+            setTimeout(() => {
+                try {
+                    const imageData = canvas.toDataURL('image/png');
+                    chart.destroy();
+                    resolve(imageData);
+                } catch (e) {
+                    console.error('Errore conversione grafico:', e);
+                    resolve('');
+                }
+            }, 500); // Aumentato da 100 a 500ms
+        } catch (e) {
+            console.error('Errore creazione chart:', e);
+            resolve('');
+        }
     });
 }
 
@@ -2028,317 +2038,358 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         return;
     }
 
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    loadingOverlay.classList.add('active');
+    try {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.add('active');
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 40;
-    let yPos = margin;
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 40;
+        let yPos = margin;
 
-    pdf.setFont("Helvetica");
+        pdf.setFont("Helvetica");
 
-    // =========================
-    // CALCOLO INSIGHT AUTOMATICI
-    // =========================
+        // =========================
+        // CALCOLO INSIGHT AUTOMATICI
+        // =========================
 
-    const totalCampaigns = filteredData.length;
-    const uniqueSites = [...new Set(filteredData.map(r => r.site))].length;
-    const uniqueSectors = [...new Set(filteredData.map(r => r.sector))].length;
-    const uniqueGoals = [...new Set(filteredData.map(r => r.goal))].length;
+        const totalCampaigns = filteredData.length;
+        const uniqueSites = [...new Set(filteredData.map(r => r.site))].length;
+        const uniqueSectors = [...new Set(filteredData.map(r => r.sector))].length;
+        const uniqueGoals = [...new Set(filteredData.map(r => r.goal))].length;
 
-    const sectorCount = {};
-    const goalCount = {};
-    const monthCount = {};
-    const statusCount = { online: 0, offline: 0, pending: 0, error: 0 };
+        const sectorCount = {};
+        const goalCount = {};
+        const monthCount = {};
+        const statusCount = { online: 0, offline: 0, pending: 0, error: 0 };
 
-    filteredData.forEach(r => {
-        if (r.sector) sectorCount[r.sector] = (sectorCount[r.sector] || 0) + 1;
-        if (r.goal) goalCount[r.goal] = (goalCount[r.goal] || 0) + 1;
-        if (r.date && r.date.length >= 7) {
-            const m = r.date.slice(0, 7);
-            monthCount[m] = (monthCount[m] || 0) + 1;
-        }
-        const status = siteStatusMap.get(r.site) || 'pending';
-        statusCount[status]++;
-    });
+        filteredData.forEach(r => {
+            if (r.sector) sectorCount[r.sector] = (sectorCount[r.sector] || 0) + 1;
+            if (r.goal) goalCount[r.goal] = (goalCount[r.goal] || 0) + 1;
+            if (r.date && r.date.length >= 7) {
+                const m = r.date.slice(0, 7);
+                monthCount[m] = (monthCount[m] || 0) + 1;
+            }
+            const status = siteStatusMap.get(r.site) || 'pending';
+            statusCount[status]++;
+        });
 
-    const topSector = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1])[0];
-    const top3Sectors = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1]).slice(0, 3);
-    const topGoal = Object.entries(goalCount).sort((a,b)=>b[1]-a[1])[0];
-    const top3Goals = Object.entries(goalCount).sort((a,b)=>b[1]-a[1]).slice(0, 3);
-    const peakMonth = Object.entries(monthCount).sort((a,b)=>b[1]-a[1])[0];
+        const topSector = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1])[0];
+        const top3Sectors = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1]).slice(0, 3);
+        const topGoal = Object.entries(goalCount).sort((a,b)=>b[1]-a[1])[0];
+        const top3Goals = Object.entries(goalCount).sort((a,b)=>b[1]-a[1]).slice(0, 3);
+        const peakMonth = Object.entries(monthCount).sort((a,b)=>b[1]-a[1])[0];
 
-    // =========================
-    // PAGINA 1: COPERTINA + EXECUTIVE SUMMARY
-    // =========================
+        console.log('📊 Generazione PDF avviata...');
 
-    // HEADER COPERTINA
-    pdf.setFillColor(20, 40, 90);
-    pdf.rect(0, 0, pageWidth, 200, "F");
+        // =========================
+        // PAGINA 1: COPERTINA + EXECUTIVE SUMMARY
+        // =========================
 
-    pdf.setTextColor(255,255,255);
-    pdf.setFontSize(32);
-    pdf.text("THREAT INTELLIGENCE REPORT", pageWidth/2, 80, {align:"center", maxWidth: pageWidth - 80});
+        // HEADER COPERTINA
+        pdf.setFillColor(20, 40, 90);
+        pdf.rect(0, 0, pageWidth, 200, "F");
 
-    pdf.setFontSize(16);
-    pdf.text("Analisi Campagne di Social Engineering & Phishing", pageWidth/2, 130, {align:"center", maxWidth: pageWidth - 80});
+        pdf.setTextColor(255,255,255);
+        pdf.setFontSize(32);
+        pdf.text("THREAT INTELLIGENCE REPORT", pageWidth/2, 80, {align:"center", maxWidth: pageWidth - 80});
 
-    pdf.setTextColor(173, 216, 230);
-    pdf.setFontSize(11);
-    pdf.text(`Generato: ${new Date().toLocaleDateString('it-IT')}`, pageWidth/2, 165, {align:"center"});
+        pdf.setFontSize(16);
+        pdf.text("Analisi Campagne di Social Engineering & Phishing", pageWidth/2, 130, {align:"center", maxWidth: pageWidth - 80});
 
-    yPos = 230;
-    pdf.setTextColor(0,0,0);
+        pdf.setTextColor(173, 216, 230);
+        pdf.setFontSize(11);
+        pdf.text(`Generato: ${new Date().toLocaleDateString('it-IT')}`, pageWidth/2, 165, {align:"center"});
 
-    // KEY METRICS
-    pdf.setFontSize(14);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("📊 Metriche Chiave", margin, yPos);
-    yPos += 20;
+        yPos = 230;
+        pdf.setTextColor(0,0,0);
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    
-    const metricsText = `
+        // KEY METRICS
+        pdf.setFontSize(14);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("📊 Metriche Chiave", margin, yPos);
+        yPos += 20;
+
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        
+        const metricsText = `
 Campagne Totali: ${totalCampaigns} | Siti Unici: ${uniqueSites} | Settori: ${uniqueSectors} | Obiettivi: ${uniqueGoals}
 
 Top Settore: ${topSector ? topSector[0] : "-"} (${topSector ? topSector[1] : 0} eventi)
 Top Obiettivo: ${topGoal ? topGoal[0] : "-"} (${topGoal ? topGoal[1] : 0} eventi)
 Picco Attività: ${peakMonth ? peakMonth[0] : "-"}
-    `.trim();
+        `.trim();
 
-    pdf.text(metricsText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 75;
+        pdf.text(metricsText, margin, yPos, {maxWidth: pageWidth - margin*2});
+        yPos += 75;
 
-    // STATUS SITI
-    pdf.setFontSize(14);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("🔍 Status Verifica Siti", margin, yPos);
-    yPos += 18;
+        // STATUS SITI
+        pdf.setFontSize(14);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("🔍 Status Verifica Siti", margin, yPos);
+        yPos += 18;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    const statusText = `
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        const statusText = `
 ✓ Online: ${statusCount.online} | ✗ Offline: ${statusCount.offline} | ⏳ In Verifica: ${statusCount.pending} | ! Errore: ${statusCount.error}
-    `.trim();
-    pdf.text(statusText, margin, yPos, {maxWidth: pageWidth - margin*2});
+        `.trim();
+        pdf.text(statusText, margin, yPos, {maxWidth: pageWidth - margin*2});
 
-    // =========================
-    // PAGINA 2: GRAFICI SETTORI
-    // =========================
+        console.log('✓ Pagina 1 completata');
 
-    pdf.addPage();
-    yPos = margin;
+        // =========================
+        // PAGINA 2: GRAFICI SETTORI
+        // =========================
 
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("1. DISTRIBUZIONE PER SETTORE", margin, yPos);
-    yPos += 25;
+        pdf.addPage();
+        yPos = margin;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    pdf.text("Analisi della concentrazione degli attacchi per settore economico", margin, yPos);
-    yPos += 20;
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("1. DISTRIBUZIONE PER SETTORE", margin, yPos);
+        yPos += 25;
 
-    const sectorImg = await createChartImage(allSectorsChart.config, 1200, 450);
-    pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 200);
-    yPos += 220;
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        pdf.text("Analisi della concentrazione degli attacchi per settore economico", margin, yPos);
+        yPos += 20;
 
-    // Top 5 Settori
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Top 3 Settori Attaccati:", margin, yPos);
-    yPos += 15;
+        console.log('⏳ Generando grafico settori...');
+        const sectorImg = await createChartImage(allSectorsChart.config, 1200, 450);
+        if (sectorImg) {
+            pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 200);
+            console.log('✓ Grafico settori aggiunto');
+        }
+        yPos += 220;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    top3Sectors.forEach((sector, idx) => {
-        pdf.text(`${idx + 1}. ${sector[0]}: ${sector[1]} campagne`, margin + 10, yPos);
-        yPos += 12;
-    });
+        // Top 5 Settori
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.text("Top 3 Settori Attaccati:", margin, yPos);
+        yPos += 15;
 
-    // =========================
-    // PAGINA 3: TOP 5 SETTORI + OBIETTIVI
-    // =========================
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        top3Sectors.forEach((sector, idx) => {
+            pdf.text(`${idx + 1}. ${sector[0]}: ${sector[1]} campagne`, margin + 10, yPos);
+            yPos += 12;
+        });
 
-    pdf.addPage();
-    yPos = margin;
+        console.log('✓ Pagina 2 completata');
 
-    // TOP 5 BAR CHART
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("2. TOP 5 SETTORI (Dettaglio)", margin, yPos);
-    yPos += 20;
+        // =========================
+        // PAGINA 3: TOP 5 SETTORI + OBIETTIVI
+        // =========================
 
-    const top5Img = await createChartImage(top5SectorsBarChart.config, 1200, 450);
-    pdf.addImage(top5Img, "PNG", margin, yPos, pageWidth - margin*2, 180);
-    yPos += 200;
+        pdf.addPage();
+        yPos = margin;
 
-    // OBIETTIVI
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("3. DISTRIBUZIONE OBIETTIVI DI ATTACCO", margin, yPos);
-    yPos += 20;
+        // TOP 5 BAR CHART
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("2. TOP 5 SETTORI (Dettaglio)", margin, yPos);
+        yPos += 20;
 
-    const goalsImg = await createChartImage(goalsPieChart.config, 1200, 450);
-    pdf.addImage(goalsImg, "PNG", margin, yPos, pageWidth - margin*2, 180);
+        console.log('⏳ Generando grafico Top 5...');
+        const top5Img = await createChartImage(top5SectorsBarChart.config, 1200, 450);
+        if (top5Img) {
+            pdf.addImage(top5Img, "PNG", margin, yPos, pageWidth - margin*2, 180);
+            console.log('✓ Grafico Top 5 aggiunto');
+        }
+        yPos += 200;
 
-    // =========================
-    // PAGINA 4: TREND TEMPORALE
-    // =========================
+        // OBIETTIVI
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("3. DISTRIBUZIONE OBIETTIVI DI ATTACCO", margin, yPos);
+        yPos += 20;
 
-    pdf.addPage();
-    yPos = margin;
+        console.log('⏳ Generando grafico obiettivi...');
+        const goalsImg = await createChartImage(goalsPieChart.config, 1200, 450);
+        if (goalsImg) {
+            pdf.addImage(goalsImg, "PNG", margin, yPos, pageWidth - margin*2, 180);
+            console.log('✓ Grafico obiettivi aggiunto');
+        }
 
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("4. TREND TEMPORALE - EVOLUZIONE MENSILE", margin, yPos);
-    yPos += 20;
+        console.log('✓ Pagina 3 completata');
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    pdf.text("Analisi dell'andamento delle campagne nel tempo", margin, yPos);
-    yPos += 15;
+        // =========================
+        // PAGINA 4: TREND TEMPORALE
+        // =========================
 
-    const monthImg = await createChartImage(monthChart.config, 1200, 500);
-    pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
-    yPos += 250;
+        pdf.addPage();
+        yPos = margin;
 
-    // =========================
-    // PAGINA 5: EVOLUZIONE SETTORI NEL TEMPO
-    // =========================
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("4. TREND TEMPORALE - EVOLUZIONE MENSILE", margin, yPos);
+        yPos += 20;
 
-    pdf.addPage();
-    yPos = margin;
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        pdf.text("Analisi dell'andamento delle campagne nel tempo", margin, yPos);
+        yPos += 15;
 
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("5. EVOLUZIONE SETTORI NEL TEMPO", margin, yPos);
-    yPos += 20;
+        console.log('⏳ Generando grafico trend mensile...');
+        const monthImg = await createChartImage(monthChart.config, 1200, 500);
+        if (monthImg) {
+            pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+            console.log('✓ Grafico trend aggiunto');
+        }
+        yPos += 250;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    pdf.text("Trend temporale dei principali settori attaccati", margin, yPos);
-    yPos += 15;
+        console.log('✓ Pagina 4 completata');
 
-    const goalsByMonthImg = await createChartImage(goalsByMonthChart.config, 1200, 500);
-    pdf.addImage(goalsByMonthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+        // =========================
+        // PAGINA 5: EVOLUZIONE SETTORI NEL TEMPO
+        // =========================
 
-    // =========================
-    // PAGINA 6: EVOLUZIONE OBIETTIVI NEL TEMPO
-    // =========================
+        pdf.addPage();
+        yPos = margin;
 
-    pdf.addPage();
-    yPos = margin;
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("5. EVOLUZIONE SETTORI NEL TEMPO", margin, yPos);
+        yPos += 20;
 
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("6. EVOLUZIONE OBIETTIVI DI ATTACCO NEL TEMPO", margin, yPos);
-    yPos += 20;
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        pdf.text("Trend temporale dei principali settori attaccati", margin, yPos);
+        yPos += 15;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    pdf.text("Analisi temporale dei principali obiettivi di attacco", margin, yPos);
-    yPos += 15;
+        console.log('⏳ Generando grafico evoluzione settori...');
+        const goalsByMonthImg = await createChartImage(goalsByMonthChart.config, 1200, 500);
+        if (goalsByMonthImg) {
+            pdf.addImage(goalsByMonthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+            console.log('✓ Grafico evoluzione settori aggiunto');
+        }
 
-    const attackGoalsImg = await createChartImage(attackGoalsTimeChart.config, 1200, 500);
-    pdf.addImage(attackGoalsImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+        console.log('✓ Pagina 5 completata');
 
-    // =========================
-    // PAGINA 7: ANALISI DETTAGLIATA
-    // =========================
+        // =========================
+        // PAGINA 6: EVOLUZIONE OBIETTIVI NEL TEMPO
+        // =========================
 
-    pdf.addPage();
-    yPos = margin;
+        pdf.addPage();
+        yPos = margin;
 
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("7. ANALISI DETTAGLIATA", margin, yPos);
-    yPos += 25;
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("6. EVOLUZIONE OBIETTIVI DI ATTACCO NEL TEMPO", margin, yPos);
+        yPos += 20;
 
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(11);
-    pdf.text("🎯 SETTORI PIÙ COLPITI", margin, yPos);
-    yPos += 15;
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        pdf.text("Analisi temporale dei principali obiettivi di attacco", margin, yPos);
+        yPos += 15;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    const sectorAnalysis = `
+        console.log('⏳ Generando grafico evoluzione obiettivi...');
+        const attackGoalsImg = await createChartImage(attackGoalsTimeChart.config, 1200, 500);
+        if (attackGoalsImg) {
+            pdf.addImage(attackGoalsImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+            console.log('✓ Grafico evoluzione obiettivi aggiunto');
+        }
+
+        console.log('✓ Pagina 6 completata');
+
+        // =========================
+        // PAGINA 7: ANALISI DETTAGLIATA
+        // =========================
+
+        pdf.addPage();
+        yPos = margin;
+
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("7. ANALISI DETTAGLIATA", margin, yPos);
+        yPos += 25;
+
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.text("🎯 SETTORI PIÙ COLPITI", margin, yPos);
+        yPos += 15;
+
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        const sectorAnalysis = `
 L'analisi dei dati rivela una concentrazione significativa degli attacchi nel settore ${topSector ? topSector[0] : "-"}, 
 con ${topSector ? topSector[1] : 0} campagne identificate. Questo suggerisce una strategia deliberata di targeting 
 verso ambiti ad elevato valore economico o reputazionale.
-    `.trim();
-    pdf.text(sectorAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 50;
+        `.trim();
+        pdf.text(sectorAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
+        yPos += 50;
 
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(11);
-    pdf.text("🔗 OBIETTIVI PREVALENTI", margin, yPos);
-    yPos += 15;
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.text("🔗 OBIETTIVI PREVALENTI", margin, yPos);
+        yPos += 15;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    const goalAnalysis = `
-Le finalità di attacco risultano prevalentemente orientate a "${topGoal ? topGoal[0] : "-"}", 
-con ${topGoal ? topGoal[1] : 0} occorrenze. Questa distribuzione indica una propensione verso:
-    `.trim();
-    pdf.text(goalAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 35;
-
-    top3Goals.forEach((goal, idx) => {
         pdf.setFont("Helvetica", "regular");
         pdf.setFontSize(10);
-        const descriptions = {
-            'CREDENTIAL THEFT': 'Sottrazione di credenziali di accesso',
-            'DATA EXFILTRATION': 'Estrazione e furto dati confidenziali',
-            'FINANCIAL FRAUD': 'Frodi finanziarie e trasferimenti fraudolenti',
-            'MALWARE DISTRIBUTION': 'Distribuzione di malware e trojan',
-            'BRAND SPOOFING': 'Imitazione di brand noti'
-        };
-        const desc = descriptions[goal[0]] || goal[0];
-        pdf.text(`${idx + 1}. ${desc} (${goal[1]} campagne)`, margin + 15, yPos);
-        yPos += 12;
-    });
+        const goalAnalysis = `
+Le finalità di attacco risultano prevalentemente orientate a "${topGoal ? topGoal[0] : "-"}", 
+con ${topGoal ? topGoal[1] : 0} occorrenze. Questa distribuzione indica una propensione verso:
+        `.trim();
+        pdf.text(goalAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
+        yPos += 35;
 
-    yPos += 10;
+        top3Goals.forEach((goal, idx) => {
+            pdf.setFont("Helvetica", "regular");
+            pdf.setFontSize(10);
+            const descriptions = {
+                'CREDENTIAL THEFT': 'Sottrazione di credenziali di accesso',
+                'DATA EXFILTRATION': 'Estrazione e furto dati confidenziali',
+                'FINANCIAL FRAUD': 'Frodi finanziarie e trasferimenti fraudolenti',
+                'MALWARE DISTRIBUTION': 'Distribuzione di malware e trojan',
+                'BRAND SPOOFING': 'Imitazione di brand noti'
+            };
+            const desc = descriptions[goal[0]] || goal[0];
+            pdf.text(`${idx + 1}. ${desc} (${goal[1]} campagne)`, margin + 15, yPos);
+            yPos += 12;
+        });
 
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(11);
-    pdf.text("📅 PICCO DI ATTIVITÀ", margin, yPos);
-    yPos += 15;
+        yPos += 10;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    const timeAnalysis = `
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.text("📅 PICCO DI ATTIVITÀ", margin, yPos);
+        yPos += 15;
+
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        const timeAnalysis = `
 Il periodo di massima attività è stato registrato nel mese di ${peakMonth ? peakMonth[0] : "-"}, 
 con ${peakMonth ? peakMonth[1] : 0} campagne. Ciò consente di identificare pattern stagionali e fasi di intensificazione.
-    `.trim();
-    pdf.text(timeAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
+        `.trim();
+        pdf.text(timeAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
 
-    // =========================
-    // PAGINA 8: CONCLUSIONI E RACCOMANDAZIONI
-    // =========================
+        console.log('✓ Pagina 7 completata');
 
-    pdf.addPage();
-    yPos = margin;
+        // =========================
+        // PAGINA 8: CONCLUSIONI E RACCOMANDAZIONI
+        // =========================
 
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica", "bold");
-    pdf.text("8. CONCLUSIONI E RACCOMANDAZIONI", margin, yPos);
-    yPos += 25;
+        pdf.addPage();
+        yPos = margin;
 
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(11);
-    pdf.text("📋 SINTESI DEI RISULTATI", margin, yPos);
-    yPos += 15;
+        pdf.setFontSize(16);
+        pdf.setFont("Helvetica", "bold");
+        pdf.text("8. CONCLUSIONI E RACCOMANDAZIONI", margin, yPos);
+        yPos += 25;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    const conclusionText = `
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.text("📋 SINTESI DEI RISULTATI", margin, yPos);
+        yPos += 15;
+
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        const conclusionText = `
 L'analisi dei dati ha evidenziato un'attività strutturata e coordinata da parte degli attori malevoli. 
 La concentrazione settoriale, la ripetitività degli obiettivi e l'andamento temporale confermano:
 
@@ -2346,58 +2397,74 @@ La concentrazione settoriale, la ripetitività degli obiettivi e l'andamento tem
 • Una preferenza marcata per tecniche di social engineering
 • Variazioni stagionali nelle campagne di attacco
 • Una persistenza continua delle minacce nel panorama cybercriminale
-    `.trim();
-    pdf.text(conclusionText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 90;
+        `.trim();
+        pdf.text(conclusionText, margin, yPos, {maxWidth: pageWidth - margin*2});
+        yPos += 90;
 
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(11);
-    pdf.text("✅ AZIONI CONSIGLIATE", margin, yPos);
-    yPos += 15;
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.text("✅ AZIONI CONSIGLIATE", margin, yPos);
+        yPos += 15;
 
-    pdf.setFont("Helvetica", "regular");
-    pdf.setFontSize(10);
-    const recommendations = `
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        const recommendations = `
 1. AWARENESS & TRAINING: Incrementare i programmi di sensibilizzazione del personale
 2. TECHNICAL CONTROLS: Implementare filtri anti-phishing e DMARC/SPF/DKIM
 3. MONITORING: Attivare sistemi di monitoring continuo per siti malevoli
 4. INCIDENT RESPONSE: Definire playbook e procedure di risposta agli incidenti
 5. THREAT INTELLIGENCE: Integrare i dati in soluzioni SIEM/SOC
-    `.trim();
-    pdf.text(recommendations, margin, yPos, {maxWidth: pageWidth - margin*2});
+        `.trim();
+        pdf.text(recommendations, margin, yPos, {maxWidth: pageWidth - margin*2});
 
-    // =========================
-    // FOOTER PAGINE
-    // =========================
+        console.log('✓ Pagina 8 completata');
 
-    const totalPages = pdf.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setTextColor(150,150,150);
-        pdf.setFontSize(8);
-        pdf.setFont("Helvetica", "normal");
+        // =========================
+        // FOOTER PAGINE
+        // =========================
+
+        const totalPages = pdf.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i);
+            pdf.setTextColor(150,150,150);
+            pdf.setFontSize(8);
+            pdf.setFont("Helvetica", "normal");
+            
+            // Linea separatrice
+            pdf.setDrawColor(200, 200, 200);
+            pdf.line(margin, pageHeight - 30, pageWidth - margin, pageHeight - 30);
+            
+            // Testo footer
+            pdf.text(
+                `Report Threat Intelligence - Pagina ${i} di ${totalPages}`,
+                margin,
+                pageHeight - 15
+            );
+            pdf.text(
+                `Confidenziale - ${new Date().getFullYear()}`,
+                pageWidth - margin,
+                pageHeight - 15,
+                {align: "right"}
+            );
+        }
+
+        console.log('✓ Footer aggiunto');
+
+        // DOWNLOAD
+        const filename = `ThreatIntelligence_Report_${new Date().toISOString().slice(0,10)}.pdf`;
+        console.log('📥 Avvio download:', filename);
         
-        // Linea separatrice
-        pdf.setDrawColor(200, 200, 200);
-        pdf.line(margin, pageHeight - 30, pageWidth - margin, pageHeight - 30);
+        pdf.save(filename);
         
-        // Testo footer
-        pdf.text(
-            `Report Threat Intelligence - Pagina ${i} di ${totalPages}`,
-            margin,
-            pageHeight - 15
-        );
-        pdf.text(
-            `Confidenziale - ${new Date().getFullYear()}`,
-            pageWidth - margin,
-            pageHeight - 15,
-            {align: "right"}
-        );
+        console.log('✅ PDF generato e scaricato con successo!');
+
+        loadingOverlay.classList.remove('active');
+
+    } catch (error) {
+        console.error('❌ Errore nella generazione del PDF:', error);
+        alert('⚠️ Errore durante la generazione del PDF: ' + error.message);
+        loadingOverlay.classList.remove('active');
     }
-
-    pdf.save(`ThreatIntelligence_Report_${new Date().toISOString().slice(0,10)}.pdf`);
-
-    loadingOverlay.classList.remove('active');
 });
 
 
