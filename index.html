@@ -875,14 +875,14 @@ function getLocalImagePath(screenshotName) {
     
     // METODO 1: GitHub Pages (se abilitato)
     // Decommentare se GitHub Pages è attivo nel tuo repo
-    // return `https://nimeo1988.github.io/social-dasboard/images/${fileName}`;
+    // return `https://nimeo1988.github.io/social-dashboard/images/${fileName}`;
     
     // METODO 2: Raw GitHub Content con bypass CORS
     // Usa jsdelivr come CDN per GitHub (ha CORS abilitato)
-    return `https://cdn.jsdelivr.net/gh/nimeo1988/social-dasboard@main/images/${fileName}`;
+    return `https://cdn.jsdelivr.net/gh/nimeo1988/social-dashboard@main/images/${fileName}`;
     
     // METODO 3: Alternativa con rawcdn.githack (fallback)
-    // return `https://rawcdn.githack.com/nimeo1988/social-dasboard/main/images/${fileName}`;
+    // return `https://rawcdn.githack.com/nimeo1988/social-dashboard/main/images/${fileName}`;
 }
 
 function showImage(imagePath) {
@@ -2399,7 +2399,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
 // AUTO LOAD CSV ON PAGE LOAD
 document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = '/social-dasboard/data/dati.csv';
+    const csvPath = '/social-dashboard/data/dati.csv';
     
     fetch(csvPath)
         .then(response => {
